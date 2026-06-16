@@ -62,7 +62,7 @@ LOCAL_C_INCLUDES := \
 #HAL 1.0 Include paths
 LOCAL_C_INCLUDES += \
         frameworks/native/include/media/hardware \
-        device/msft/talkman/camera/QCamera2/HAL
+        device/msft/cityman/camera/QCamera2/HAL
 
 LOCAL_HEADER_LIBRARIES := display_headers generated_kernel_headers
 
@@ -70,7 +70,7 @@ LOCAL_HEADER_LIBRARIES := display_headers generated_kernel_headers
 LOCAL_C_INCLUDES += \
         $(TARGET_OUT_HEADERS)/qcom/display
 
-ifeq ($(call is-board-platform-in-list, msm8992),true)
+ifeq ($(call is-board-platform-in-list, msm8994),true)
 LOCAL_CFLAGS += -DOPTIMIZE_BUF_COUNT
 endif
 

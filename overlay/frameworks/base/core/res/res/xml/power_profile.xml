@@ -23,7 +23,7 @@
     <item name="none">0</item>
 
     <!-- This is the battery capacity in mAh -->
-    <item name="battery.capacity">2700</item>
+    <item name="battery.capacity">3340</item>
 
     <!-- Number of cores each CPU cluster contains -->
     <array name="cpu.clusters.cores">
@@ -312,7 +312,7 @@
     <item name="radio.scanning">4.56959643376497</item>
     <!-- Current consumed by the radio at different signal strengths, when paging -->
     <array name="radio.on"> <!-- Strength 0 to BINS-1 -->
-        <value>14.718992198734</value>
+        <value>14.718994198734</value>
         <value>7.11953513364874</value>
 	    <value>9.67242765594385</value>
 	    <value>10.9664724655329</value>

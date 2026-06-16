@@ -1,13 +1,13 @@
 [
   {
-    "repository"  : "Android4Lumia950/android_kernel_msft_talkman",
-    "target_path" : "kernel/msft/talkman",
+    "repository"  : "shadowofleaf96/android_kernel_msft_cityman",
+    "target_path" : "kernel/msft/cityman",
     "remote"      : "github"
   },
   {
-    "repository"  : "Android4Lumia950/android_vendor_msft_talkman",
-    "target_path" : "vendor/msft/talkman",
-    "branch"      : "lineage-18.1-talkman",
+    "repository"  : "shadowofleaf96/android_vendor_msft_cityman",
+    "target_path" : "vendor/msft/cityman",
+    "branch"      : "lineage-18.1-cityman",
     "remote"      : "github"
   },
   {

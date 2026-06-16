@@ -41,9 +41,6 @@ genfscon sysfs /devices/soc.0/0.qcom,rmtfs_sharedmem                     u:objec
 genfscon sysfs /module/lpm_levels                                        u:object_r:sysfs_power_management:s0
 genfscon sysfs /module/cpu_boost                                         u:object_r:sysfs_devices_system_cpu:s0
 genfscon sysfs /devices/soc.0/f9200000.ssusb                             u:object_r:sysfs_usb:s0
-genfscon sysfs /devices/virtual/nanohub/nanohub                          u:object_r:sysfs_nanoapp_cmd:s0
-genfscon sysfs /module/g_android/parameters                              u:object_r:sysfs_g_android_param:s0
-genfscon sysfs /module/lge_handle_panic/parameters                       u:object_r:sysfs_lge_handle_panic_param:s0
 genfscon sysfs /kernel/mm/ksm                                            u:object_r:sysfs_ksm:s0
 genfscon sysfs /devices/pci0000:00/0000:00:00.0/0000:01:00.0/net/wlan0   u:object_r:sysfs_wlan0:s0
 genfscon sysfs /devices/virtual/graphics/fb0                             u:object_r:sysfs_graphics:s0

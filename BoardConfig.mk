@@ -14,11 +14,11 @@
 # limitations under the License.
 #
 
-DEVICE_PATH := device/msft/talkman
+DEVICE_PATH := device/msft/cityman
 BUILD_BROKEN_DUP_RULES := true
 BUILD_BROKEN_USES_BUILD_COPY_HEADERS := true
 
-TARGET_OTA_ASSERT_DEVICE := talkman,bullhead,angler
+TARGET_OTA_ASSERT_DEVICE := cityman
 
 # Architecture
 TARGET_ARCH := arm64
@@ -39,7 +39,7 @@ TARGET_USES_AOSP := true
 # Bootloader
 TARGET_NO_BOOTLOADER := true
 TARGET_NO_RADIOIMAGE := true
-TARGET_BOARD_PLATFORM := msm8992
+TARGET_BOARD_PLATFORM := msm8994
 
 WITH_DEXPREOPT := true
 DONT_DEXPREOPT_PREBUILTS := true
@@ -51,15 +51,15 @@ BOARD_KERNEL_BASE        := 0x00000000
 BOARD_KERNEL_PAGESIZE    := 4096
 BOARD_KERNEL_TAGS_OFFSET := 0x01E00000
 BOARD_RAMDISK_OFFSET     := 0x02000000
-BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=talkman boot_cpus=0-5
+BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=cityman boot_cpus=0-5
 BOARD_KERNEL_CMDLINE += lpm_levels.sleep_disabled=1 msm_poweroff.download_mode=0
 BOARD_KERNEL_CMDLINE += loop.max_part=7 androidboot.boot_devices=soc.0/f9824900.sdhci
 BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset $(BOARD_RAMDISK_OFFSET) --tags_offset $(BOARD_KERNEL_TAGS_OFFSET)
 #KERNEL_TOOLCHAIN := $(shell pwd)/prebuilts/arm64-gcc/bin
 #KERNEL_TOOLCHAIN_PREFIX := aarch64-elf-
-TARGET_KERNEL_SOURCE := kernel/msft/talkman
-TARGET_KERNEL_CONFIG := lineageos_talkman_defconfig
+TARGET_KERNEL_SOURCE := kernel/msft/cityman
+TARGET_KERNEL_CONFIG := lineageos_cityman_defconfig
 BOARD_KERNEL_IMAGE_NAME := Image.gz-dtb
 TARGET_COMPILE_WITH_MSM_KERNEL := true
 TARGET_KERNEL_ARCH := arm64
@@ -166,9 +166,8 @@ TARGET_USES_INTERACTION_BOOST := true
 TARGET_USES_NON_LEGACY_POWERHAL := true
 
 # Recovery
-TARGET_RECOVERY_UI_LIB := librecovery_ui_nanohub
 BOARD_SUPPRESS_SECURE_ERASE := true
-TARGET_RECOVERY_FSTAB = $(DEVICE_PATH)/rootdir/etc/fstab.talkman
+TARGET_RECOVERY_FSTAB = $(DEVICE_PATH)/rootdir/etc/fstab.cityman
 
 # Releasetools
 TARGET_RELEASETOOLS_EXTENSIONS := $(DEVICE_PATH)
@@ -188,7 +187,6 @@ TARGET_LD_SHIM_LIBS := \
 
 
 # Testing related defines
-BOARD_PERFSETUP_SCRIPT := platform_testing/scripts/perf-setup/bullhead-setup.sh
 
 # Telephony
 TARGET_USES_ALTERNATIVE_MANUAL_NETWORK_SELECT := true
@@ -208,7 +206,7 @@ WIFI_HIDL_UNIFIED_SUPPLICANT_SERVICE_RC_ENTRY := true
 
 # NFC
 BOARD_NFC_CHIPSET := pn547
-BOARD_NFC_HAL_SUFFIX := msm8992
+BOARD_NFC_HAL_SUFFIX := msm8994
 BOARD_NFC_DEVICE := "/dev/pn547"
 
--include vendor/msft/talkman/BoardConfigVendor.mk
+-include vendor/msft/cityman/BoardConfigVendor.mk

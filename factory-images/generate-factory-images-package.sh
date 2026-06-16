@@ -16,8 +16,8 @@
 
 source ../../../common/clear-factory-images-variables.sh
 BUILD=2078061
-DEVICE=talkman
-PRODUCT=talkman
+DEVICE=cityman
+PRODUCT=cityman
 VERSION=mda09b
 SRCPREFIX=signed-
 BOOTLOADER=bhz09n

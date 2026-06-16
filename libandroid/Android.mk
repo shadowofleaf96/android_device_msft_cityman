@@ -15,7 +15,7 @@
 #
 
 ifeq ($(TARGET_BUILD_PDK),true)
-ifeq ($(TARGET_BOARD_PLATFORM),msm8992)
+ifeq ($(TARGET_BOARD_PLATFORM),msm8994)
 
 #----------------------------------------------------------------------
 # Fixup libandroid dependency

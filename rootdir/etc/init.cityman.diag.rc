@@ -1,4 +1,4 @@
-# This file gets copied as /init.talkman.diag.rc
+# This file gets copied as /init.cityman.diag.rc
 
 on post-fs-data
     # Modem logging collection

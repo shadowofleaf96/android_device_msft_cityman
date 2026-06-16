@@ -63,7 +63,6 @@ type thermal_socket, file_type;
 # type for perfd
 type sysfs_performance, sysfs_type, fs_type;
 
-type nanohub_lock_file, file_type, data_file_type, core_data_file_type;
 
 # SurfaceFlinger file type for sysfs access
 type sysfs_graphics, sysfs_type, fs_type;
@@ -100,10 +99,10 @@ type sysfs_mmc, fs_type, sysfs_type;
 
 # type for init
 type sysfs_g_android_param, fs_type, sysfs_type;
-type sysfs_lge_handle_panic_param, fs_type, sysfs_type;
 
 # type for rmt
 type debugfs_rmt_storage, fs_type, debugfs_type;
+type rmt_storage_debug_file, file_type, data_file_type, core_data_file_type;
 
 # type for perfs
 type sysfs_ksm, fs_type, sysfs_type;

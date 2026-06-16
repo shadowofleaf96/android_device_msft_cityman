@@ -18,91 +18,91 @@ LOCAL_PATH := $(call my-dir)
 # Device init scripts
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := fstab.talkman
+LOCAL_MODULE := fstab.cityman
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := ETC
-LOCAL_SRC_FILES := etc/fstab.talkman
+LOCAL_SRC_FILES := etc/fstab.cityman
 LOCAL_MODULE_PATH  := $(TARGET_OUT_VENDOR_ETC)
 include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := init.talkman.ramdump.rc
+LOCAL_MODULE := init.cityman.ramdump.rc
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := ETC
-LOCAL_SRC_FILES := etc/init.talkman.ramdump.rc
+LOCAL_SRC_FILES := etc/init.cityman.ramdump.rc
 LOCAL_MODULE_PATH  := $(TARGET_OUT_VENDOR_ETC)/init/hw
 include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := init.talkman.fp.rc
+LOCAL_MODULE := init.cityman.fp.rc
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := ETC
-LOCAL_SRC_FILES := etc/init.talkman.fp.rc
+LOCAL_SRC_FILES := etc/init.cityman.fp.rc
 LOCAL_MODULE_PATH  := $(TARGET_OUT_VENDOR_ETC)/init/hw
 include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := init.talkman.rc
+LOCAL_MODULE := init.cityman.rc
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := ETC
-LOCAL_SRC_FILES := etc/init.talkman.rc
+LOCAL_SRC_FILES := etc/init.cityman.rc
 LOCAL_MODULE_PATH  := $(TARGET_OUT_VENDOR_ETC)/init/hw
 include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := init.talkman.sensors.rc
+LOCAL_MODULE := init.cityman.sensors.rc
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := ETC
-LOCAL_SRC_FILES := etc/init.talkman.sensors.rc
+LOCAL_SRC_FILES := etc/init.cityman.sensors.rc
 LOCAL_MODULE_PATH  := $(TARGET_OUT_VENDOR_ETC)/init/hw
 include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := init.talkman.sensorhub.rc
+LOCAL_MODULE := init.cityman.sensorhub.rc
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := ETC
-LOCAL_SRC_FILES := etc/init.talkman.sensorhub.rc
+LOCAL_SRC_FILES := etc/init.cityman.sensorhub.rc
 LOCAL_MODULE_PATH  := $(TARGET_OUT_VENDOR_ETC)/init/hw
 include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := init.talkman.usb.rc
+LOCAL_MODULE := init.cityman.usb.rc
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := ETC
-LOCAL_SRC_FILES := etc/init.talkman.usb.rc
+LOCAL_SRC_FILES := etc/init.cityman.usb.rc
 LOCAL_MODULE_PATH  := $(TARGET_OUT_VENDOR_ETC)/init/hw
 include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := init.talkman.misc.rc
+LOCAL_MODULE := init.cityman.misc.rc
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := ETC
-LOCAL_SRC_FILES := etc/init.talkman.misc.rc
+LOCAL_SRC_FILES := etc/init.cityman.misc.rc
 LOCAL_MODULE_PATH  := $(TARGET_OUT_VENDOR_ETC)/init/hw
 include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := init.recovery.talkman.rc
+LOCAL_MODULE := init.recovery.cityman.rc
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := ETC
-LOCAL_SRC_FILES := etc/init.recovery.talkman.rc
+LOCAL_SRC_FILES := etc/init.recovery.cityman.rc
 LOCAL_MODULE_PATH := $(TARGET_RECOVERY_OUT)
 include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := init.talkman.diag.rc
+LOCAL_MODULE := init.cityman.diag.rc
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := ETC
-LOCAL_SRC_FILES := etc/init.talkman.diag.rc
+LOCAL_SRC_FILES := etc/init.cityman.diag.rc
 LOCAL_MODULE_PATH  := $(TARGET_OUT_VENDOR_ETC)/init/hw
 include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := ueventd.talkman.rc
+LOCAL_MODULE := ueventd.cityman.rc
 LOCAL_MODULE_STEM  := ueventd.rc
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := ETC
-LOCAL_SRC_FILES := etc/ueventd.talkman.rc
+LOCAL_SRC_FILES := etc/ueventd.cityman.rc
 LOCAL_MODULE_PATH  := $(TARGET_OUT_VENDOR)
 
 include $(BUILD_PREBUILT)

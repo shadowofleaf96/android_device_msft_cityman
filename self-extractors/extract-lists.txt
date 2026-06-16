@@ -75,16 +75,16 @@
             system/etc/qcril.db \
             system/etc/qmi_fw.conf \
             system/etc/sap.conf \
-            system/etc/thermal-engine-8992.conf \
+            system/etc/thermal-engine-8994.conf \
             system/framework/cneapiclient.jar \
             system/framework/embmslibrary.jar \
             system/framework/qcrilhook.jar \
             system/framework/rcsimssettings.jar \
             system/framework/rcsservice.jar \
-            system/lib64/hw/gps.msm8992.so \
+            system/lib64/hw/gps.msm8994.so \
             system/lib64/libgps.utils.so \
             system/lib64/libiperf.so \
-            system/lib/hw/gps.msm8992.so \
+            system/lib/hw/gps.msm8994.so \
             system/lib/libgps.utils.so \
             system/lib/libiperf.so \
             system/xbin/iperf3 \
