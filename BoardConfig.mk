@@ -51,10 +51,10 @@ BOARD_KERNEL_BASE        := 0x00000000
 BOARD_KERNEL_PAGESIZE    := 4096
 BOARD_KERNEL_TAGS_OFFSET := 0x01E00000
 BOARD_RAMDISK_OFFSET     := 0x02000000
-BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=cityman boot_cpus=0-5
+BOARD_KERNEL_CMDLINE := androidboot.hardware=cityman boot_cpus=0-5
 BOARD_KERNEL_CMDLINE += lpm_levels.sleep_disabled=1 msm_poweroff.download_mode=0
 BOARD_KERNEL_CMDLINE += loop.max_part=7 androidboot.boot_devices=soc.0/f9824900.sdhci
-BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
+BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive androidboot.usbconfigfs=0
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset $(BOARD_RAMDISK_OFFSET) --tags_offset $(BOARD_KERNEL_TAGS_OFFSET)
 #KERNEL_TOOLCHAIN := $(shell pwd)/prebuilts/arm64-gcc/bin
 #KERNEL_TOOLCHAIN_PREFIX := aarch64-elf-
@@ -64,12 +64,7 @@ BOARD_KERNEL_IMAGE_NAME := Image.gz-dtb
 TARGET_COMPILE_WITH_MSM_KERNEL := true
 TARGET_KERNEL_ARCH := arm64
 TARGET_KERNEL_HEADER_ARCH := arm64
-
-# Kernel - prebuilt
-TARGET_FORCE_PREBUILT_KERNEL := true
-ifeq ($(TARGET_FORCE_PREBUILT_KERNEL),true)
-TARGET_PREBUILT_KERNEL := $(DEVICE_PATH)/prebuilts/kernel
-endif
+TARGET_KERNEL_CLANG_COMPILE := false
 
 # APEX
 TARGET_FLATTEN_APEX := true
@@ -155,6 +150,9 @@ TARGET_COPY_OUT_VENDOR := vendor
 BOARD_USES_SECURE_SERVICES := true
 BOARD_ROOT_EXTRA_FOLDERS := persist firmware
 
+# Force software keymaster to prevent qseecom hang
+TARGET_PROVIDES_KEYMASTER := true
+
 # Netd
 TARGET_OMIT_NETD_TETHER_FTP_HELPER := true
 
@@ -164,6 +162,8 @@ TARGET_PER_MGR_ENABLED := true
 # Power
 TARGET_USES_INTERACTION_BOOST := true
 TARGET_USES_NON_LEGACY_POWERHAL := true
+
+
 
 # Recovery
 BOARD_SUPPRESS_SECURE_ERASE := true

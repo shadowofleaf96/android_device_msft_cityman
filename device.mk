@@ -362,7 +362,11 @@ PRODUCT_BOOT_JARS += \
 
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     persist.radio.snapshot_enabled=1 \
-    persist.radio.snapshot_timer=10
+    persist.radio.snapshot_timer=10 \
+    ro.adb.secure=0 \
+    ro.secure=0 \
+    ro.debuggable=1 \
+    persist.sys.usb.config=adb
 
 # Sensor
 PRODUCT_PACKAGES += \
@@ -458,3 +462,12 @@ $(call inherit-product-if-exists, hardware/qcom/msm8994/msm8994.mk)
 $(call inherit-product-if-exists, vendor/qcom/gpu/msm8994/msm8994-gpu-vendor.mk)
 
 PRODUCT_PACKAGES -= webview
+
+# USB Debugging (Early ADB)
+PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
+    ro.secure=0 \
+    ro.adb.secure=0 \
+    ro.debuggable=1 \
+    sys.usb.configfs=0 \
+    sys.usb.config=adb \
+    persist.sys.usb.config=adb

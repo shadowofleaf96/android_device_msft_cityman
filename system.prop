@@ -60,6 +60,10 @@ ro.hwui.text_large_cache_height=1024
 # Disable rescue party
 persist.sys.disable_rescue=true
 
+# Enable Rooted Debugging by default
+persist.sys.root_access=3
+ro.adb.secure=0
+
 # Display
 ro.opengles.version=196610
 ro.sf.lcd_density=515

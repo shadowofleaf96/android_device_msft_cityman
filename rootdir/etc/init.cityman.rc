@@ -57,6 +57,10 @@ on property:sys.boot_completed=1
     #end boot time fs tune
     write /sys/block/mmcblk0/queue/scheduler noop
     write /sys/block/mmcblk0/queue/rq_affinity 0
+
+    # Fix greyed-out USB preferences by simulating a Type-C device port
+    exec_background - root system -- /system/bin/dumpsys usb add-port port0 ufp
+    exec_background - root system -- /system/bin/dumpsys usb connect-port port0 ufp sink device
     write /sys/block/mmcblk0/queue/read_ahead_kb 128
     write /sys/block/dm-0/queue/read_ahead_kb 128
     write /sys/block/dm-1/queue/read_ahead_kb 128
