@@ -4,7 +4,7 @@
 /sys/kernel/debug/dma_buf/bufinfo      u:object_r:debugfs_bufinfo:s0
 
 # NFC labeling
-/dev/pn547                             u:object_r:nfc_device:s0
+/dev/pn54x                             u:object_r:nfc_device:s0
 /data/nfc(/.*)?                        u:object_r:nfc_data_file:s0
 /data/vendor/nfc(/.*)?                 u:object_r:nfc_vendor_data_file:s0
 

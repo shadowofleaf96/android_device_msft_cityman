@@ -4,11 +4,13 @@
 
 ### What is Working
 - Touchscreen Display
+- Brightness control
 - Rooted Debugging (Enabled by default)
 - Baseband & IMEI detection (RIL not fully functional yet)
 - MTP File Transfer (Fixed greyed-out USB preferences menu)
 
 ### Needs Testing
+- NFC
 - Location (GPS)
 - Bluetooth
 
@@ -18,6 +20,5 @@
 - Wi-Fi
 - Camera
 - Sensors
-- NFC
 - Hardware video decoding/encoding
 - Others not listed as working
