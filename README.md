@@ -6,19 +6,19 @@
 - Touchscreen Display
 - Brightness control
 - Rooted Debugging (Enabled by default)
-- Baseband & IMEI detection (RIL not fully functional yet)
+- Baseband & IMEI detection (SIM Toolkit shows up, but RIL is not fully functional)
 - MTP File Transfer (Fixed greyed-out USB preferences menu)
+- Wi-Fi (Requires Android-compatible firmware and configuration)
 
 ### Needs Testing
 - NFC
 - Location (GPS)
 - Bluetooth
+- Hardware video decoding/encoding
 
 ### Not Working
 - Audio
-- Cellular / RIL
-- Wi-Fi
+- Cellular / RIL (Shows 'No Service', enabling mobile data says 'No SIM')
 - Camera
 - Sensors
-- Hardware video decoding/encoding
 - Others not listed as working
