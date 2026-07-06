@@ -8,7 +8,7 @@
 - Rooted Debugging (Enabled by default)
 - Baseband & IMEI detection (SIM Toolkit shows up, but RIL is not fully functional)
 - MTP File Transfer (Fixed greyed-out USB preferences menu)
-- Wi-Fi (Requires Android-compatible firmware and configuration)
+- Wi-Fi (2.4GHz and 5GHz fully working, optimized for 1x1 hardware limits to avoid AP rejections)
 
 ### Needs Testing
 - NFC
