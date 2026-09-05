@@ -50,8 +50,13 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.wifi.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/android.hardware.wifi.xml \
     frameworks/native/data/etc/android.hardware.wifi.direct.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/android.hardware.wifi.direct.xml \
     frameworks/native/data/etc/android.hardware.wifi.passpoint.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/android.hardware.wifi.passpoint.xml \
-    frameworks/native/data/etc/android.hardware.sensor.proximity.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/android.hardware.sensor.proximity.xml \
+    frameworks/native/data/etc/android.hardware.sensor.accelerometer.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/android.hardware.sensor.accelerometer.xml \
+    frameworks/native/data/etc/android.hardware.sensor.compass.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/android.hardware.sensor.compass.xml \
+    frameworks/native/data/etc/android.hardware.sensor.gyroscope.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/android.hardware.sensor.gyroscope.xml \
     frameworks/native/data/etc/android.hardware.sensor.light.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/android.hardware.sensor.light.xml \
+    frameworks/native/data/etc/android.hardware.sensor.proximity.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/android.hardware.sensor.proximity.xml \
+    frameworks/native/data/etc/android.hardware.sensor.barometer.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/android.hardware.sensor.barometer.xml \
+    frameworks/native/data/etc/android.hardware.sensor.ambient_temperature.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/android.hardware.sensor.ambient_temperature.xml \
     frameworks/native/data/etc/android.hardware.sensor.gyroscope.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/android.hardware.sensor.gyroscope.xml \
     frameworks/native/data/etc/android.hardware.sensor.barometer.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/android.hardware.sensor.barometer.xml \
     frameworks/native/data/etc/android.hardware.sensor.stepcounter.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/android.hardware.sensor.stepcounter.xml \
@@ -217,7 +222,7 @@ PRODUCT_PACKAGES += \
 
 # GNSS HAL
 PRODUCT_PACKAGES += \
-    android.hardware.gnss@1.0-impl \
+    android.hardware.gnss@1.0-impl.cityman \
     android.hardware.gnss@1.0-service
 
 # GPS
@@ -372,29 +377,6 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     ro.secure=0 \
     ro.debuggable=1 \
     persist.sys.usb.config=adb
-
-# Sensor
-PRODUCT_PACKAGES += \
-    android.hardware.sensors@1.0-impl \
-    android.hardware.sensors@1.0-service \
-    libsensorndkbridge
-
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.qc.sdk.sensors.gestures=true \
-    ro.qcom.ad=1 \
-    ro.qcom.ad.sensortype=3
-
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/sensors/sensor_def_common.conf:$(TARGET_COPY_OUT_VENDOR)/etc/sensors/sensor_def_common.conf \
-    $(LOCAL_PATH)/sensors/sensor_def_variable.conf:$(TARGET_COPY_OUT_VENDOR)/etc/sensors/sensor_def_variable.conf \
-    $(LOCAL_PATH)/sensors/hals.conf:$(TARGET_COPY_OUT_VENDOR)/etc/sensors/hals.conf
-
-PRODUCT_PROPERTY_OVERRIDES += \
-    persist.debug.sensors.hal=e \
-    debug.qualcomm.sns.daemon=e \
-    debug.qualcomm.sns.hal=e \
-    debug.qualcomm.sns.libsensor1=e
-
     
 # Shims
 PRODUCT_PACKAGES += \
@@ -407,7 +389,23 @@ PRODUCT_PACKAGES += \
 
 # Thermal HAL
 PRODUCT_PACKAGES += \
-    thermal.cityman 
+    thermal.cityman
+
+# CAF thermal-engine DT_NEEDs libqti-perfd-client.so. The LGE vendor.img
+# does not ship it. This open-source stub lets thermal-engine start; the
+# 8994 conf still applies policy through ioctl/sysfs. Optional msm8994
+# perfd blobs (bullhead) are documented in power/README.md — do not commit
+# those binaries here.
+PRODUCT_PACKAGES += \
+    libqti-perfd-client
+
+# Low memory optimization
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.config.low_ram=true
+    
+PRODUCT_PACKAGES += \
+    sensors.cityman \
+    android.hardware.sensors@1.0-impl
 
 # VNDK
 PRODUCT_EXTRA_VNDK_VERSIONS := 29
