@@ -1678,8 +1678,8 @@
     </path>
 
     <path name="speaker-mic">
-        <path name="adc1" />
-        <ctl name="ADC1 Volume" value="12" />
+        <path name="dmic3" />
+        <ctl name="DEC10 Volume" value="84" />
     </path>
 
     <path name="speaker-mic-liquid">
@@ -1729,8 +1729,8 @@
     </path>
 
     <path name="handset-mic">
-        <path name="adc1" />
-        <ctl name="ADC1 Volume" value="12" />
+        <path name="dmic1" />
+        <ctl name="DEC7 Volume" value="84" />
     </path>
 
     <path name="handset-mic-cdp">
@@ -1744,8 +1744,8 @@
     </path>
 
      <path name="unprocessed-handset-mic">
-        <path name="adc1" />
-        <ctl name="ADC1 Volume" value="4" />
+        <path name="dmic1" />
+        <ctl name="DEC7 Volume" value="84" />
     </path>
 
     <path name="anc-handset">
