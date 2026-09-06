@@ -14,11 +14,11 @@
 - Headphone Jack
 - NFC (NXP PN547 stack)
 - Sensors (Accel, Gyro, Mag, Light, Prox, Press, Temp)
+- Bluetooth
 
 ### Needs Testing
 
 - Location (GPS)
-- Bluetooth
 - Hardware video decoding/encoding
 
 ### Not Working
