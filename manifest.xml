@@ -157,10 +157,19 @@
     </hal>
     <hal format="hidl">
         <name>android.hardware.nfc</name>
-        <transport arch="32+64">passthrough</transport>
-        <version>1.0</version>
+        <transport>hwbinder</transport>
+        <version>1.2</version>
         <interface>
             <name>INfc</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>vendor.nxp.nxpnfc</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>INxpNfc</name>
             <instance>default</instance>
         </interface>
     </hal>

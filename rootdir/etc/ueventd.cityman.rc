@@ -16,7 +16,7 @@
 #nfc permissions
 #/dev/nfc-nci              0660    nfc         nfc
 #/dev/assd                 0660    nfc         nfc
-/dev/pn54x                 0660    nfc         nfc
+/dev/pn547                 0660    nfc         nfc
 /dev/snfc_uart      0660    nfc nfc
 /dev/snfc_intu_poll 0440    nfc nfc
 /dev/snfc_rfs       0440    nfc nfc
