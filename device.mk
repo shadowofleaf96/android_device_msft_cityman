@@ -476,4 +476,3 @@ PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
     sys.usb.configfs=0 \
     sys.usb.config=adb \
     persist.sys.usb.config=adb
-PRODUCT_COPY_FILES += device/msft/cityman/sensors/hals.conf:$(TARGET_COPY_OUT_VENDOR)/etc/sensors/hals.conf
