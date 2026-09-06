@@ -11,7 +11,8 @@
 - MTP File Transfer (Fixed greyed-out USB preferences menu)
 - Wi-Fi (2.4GHz and 5GHz fully working)
 - Audio (Speaker via TAS2553 on Quaternary MI2S works!)
-- Headphone Jack
+- Headphone Jack (Audio playback and microphone)
+- Built-in Microphones
 - NFC (NXP PN547 stack)
 - Sensors (Accel, Gyro, Mag, Light, Prox, Press, Temp)
 - Bluetooth
@@ -21,6 +22,7 @@
 
 - Location (GPS)
 - Hardware video decoding/encoding
+- Bluetooth SCO Headset Microphone
 
 ### Not Working
 
@@ -30,4 +32,4 @@
 
 ## Credits
 
-Special thanks to **EpicLPer** for the TAS2552/3 speaker amplifier driver and ASoC patches for the Lumia 950 series!
+Special thanks to **EpicLPer** for the TAS2552/3 speaker amplifier driver and Sensors and NFC patches for the Lumia 950 series!

@@ -22,6 +22,13 @@
   - Fixed jack switch polarity detection.
   - **Bluetooth Audio**: Fixed A2DP media routing to Bluetooth headphones by switching the `android.hardware.bluetooth.audio` HAL from `passthrough` to `hwbinder` transport, allowing proper IPC between `audioserver` and the Bluetooth stack.
 
+- **Audio Routing**: Fixed extensive audio routing issues for headphones and microphones.
+  - Corrected headphone playback routing to use `SLIMBUS_5_RX` instead of the speaker's backend.
+  - Restored missing `headphones`, `headset`, and `bt-sco` device mappings to `audio_platform_info.xml`.
+  - Remapped `dmic1`-`dmic4` (Digital Microphones) to their correct hardware nodes in `mixer_paths.xml` (fixing a wrong mapping to `DMIC6`).
+  - Tuned the digital microphone gain (`DEC` volume) from `110` (+26dB) down to `98` (+14dB) to eliminate excessive static noise while maintaining optimal recording volume.
+  - Restored `AUDIO_OUTPUT_FLAG_FAST` flags in `audio_policy_configuration.xml`.
+
 ### Acknowledgments
 
 - **EpicLPer**: Thank you for the heavy lifting in porting the TAS2552/3 ASoC driver and discovering the Quaternary MI2S layout for the Lumia 950!

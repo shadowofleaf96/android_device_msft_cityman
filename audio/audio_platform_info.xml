@@ -45,6 +45,15 @@
     </acdb_ids>
 
     <backend_names>
+        <device name="SND_DEVICE_OUT_BT_SCO" backend="bt-sco" interface="SEC_AUX_PCM_RX"/>
+        <device name="SND_DEVICE_OUT_BT_SCO_WB" backend="bt-sco-wb" interface="SEC_AUX_PCM_RX"/>
+        <device name="SND_DEVICE_OUT_BT_SCO_CARKIT" backend="bt-sco" interface="SEC_AUX_PCM_RX"/>
+        <device name="SND_DEVICE_IN_BT_SCO_MIC" backend="bt-sco-mic" interface="SEC_AUX_PCM_TX"/>
+        <device name="SND_DEVICE_IN_BT_SCO_MIC_WB" backend="bt-sco-mic-wb" interface="SEC_AUX_PCM_TX"/>
+        <device name="SND_DEVICE_IN_BT_SCO_MIC_NREC" backend="bt-sco-mic" interface="SEC_AUX_PCM_TX"/>
+        <device name="SND_DEVICE_IN_BT_SCO_MIC_WB_NREC" backend="bt-sco-mic-wb" interface="SEC_AUX_PCM_TX"/>
+        <device name="SND_DEVICE_OUT_HEADSET" backend="headphones" interface="SLIMBUS_5_RX"/>
+        <device name="SND_DEVICE_OUT_HEADPHONES" backend="headphones" interface="SLIMBUS_5_RX"/>
         <device name="SND_DEVICE_OUT_SPEAKER" backend="speaker" interface="QUAT_MI2S_RX"/>
         <device name="SND_DEVICE_OUT_SPEAKER_REVERSE" backend="speaker" interface="QUAT_MI2S_RX"/>
         <device name="SND_DEVICE_OUT_SPEAKER_SAFE" backend="speaker" interface="QUAT_MI2S_RX"/>

@@ -381,6 +381,10 @@
     </path>
 
     <path name="deep-buffer-playback">
+        
+    </path>
+
+    <path name="deep-buffer-playback speaker">
         <ctl name="QUAT_MI2S_RX Audio Mixer MultiMedia1" value="1" />
     </path>
 
@@ -389,7 +393,7 @@
     </path>
 
     <path name="deep-buffer-playback headphones">
-        <ctl name="SLIMBUS_0_RX Audio Mixer MultiMedia1" value="1" />
+        <ctl name="SLIMBUS_5_RX Audio Mixer MultiMedia1" value="1" />
     </path>
 
     <path name="deep-buffer-playback speaker-and-headphones">
@@ -444,6 +448,10 @@
     </path>
 
     <path name="low-latency-playback">
+        
+    </path>
+
+    <path name="low-latency-playback speaker">
         <ctl name="QUAT_MI2S_RX Audio Mixer MultiMedia5" value="1" />
     </path>
 
@@ -452,7 +460,7 @@
     </path>
 
     <path name="low-latency-playback headphones">
-        <ctl name="SLIMBUS_0_RX Audio Mixer MultiMedia5" value="1" />
+        <ctl name="SLIMBUS_5_RX Audio Mixer MultiMedia5" value="1" />
     </path>
 
     <path name="low-latency-playback speaker-and-headphones">
@@ -492,6 +500,10 @@
     </path>
 
     <path name="audio-ull-playback">
+        
+    </path>
+
+    <path name="audio-ull-playback speaker">
         <ctl name="QUAT_MI2S_RX Audio Mixer MultiMedia3" value="1" />
     </path>
 
@@ -500,7 +512,7 @@
     </path>
 
     <path name="audio-ull-playback headphones">
-        <ctl name="SLIMBUS_0_RX Audio Mixer MultiMedia3" value="1" />
+        <ctl name="SLIMBUS_5_RX Audio Mixer MultiMedia3" value="1" />
     </path>
 
     <path name="audio-ull-playback speaker-and-headphones">
@@ -539,6 +551,10 @@
     </path>
 
     <path name="compress-offload-playback">
+        
+    </path>
+
+    <path name="compress-offload-playback speaker">
         <ctl name="QUAT_MI2S_RX Audio Mixer MultiMedia4" value="1" />
     </path>
 
@@ -547,7 +563,7 @@
     </path>
 
     <path name="compress-offload-playback headphones">
-        <ctl name="SLIMBUS_0_RX Audio Mixer MultiMedia4" value="1" />
+        <ctl name="SLIMBUS_5_RX Audio Mixer MultiMedia4" value="1" />
     </path>
 
     <path name="compress-offload-playback speaker-and-headphones">
@@ -587,11 +603,15 @@
     </path>
 
     <path name="compress-offload-playback2">
+        
+    </path>
+
+    <path name="compress-offload-playback2 speaker">
         <ctl name="QUAT_MI2S_RX Audio Mixer MultiMedia7" value="1" />
     </path>
 
     <path name="compress-offload-playback2 headphones">
-        <ctl name="SLIMBUS_0_RX Audio Mixer MultiMedia7" value="1" />
+        <ctl name="SLIMBUS_5_RX Audio Mixer MultiMedia7" value="1" />
     </path>
 
     <path name="compress-offload-playback2 speaker-and-headphones">
@@ -631,11 +651,15 @@
     </path>
 
     <path name="compress-offload-playback3">
+        
+    </path>
+
+    <path name="compress-offload-playback3 speaker">
         <ctl name="QUAT_MI2S_RX Audio Mixer MultiMedia10" value="1" />
     </path>
 
     <path name="compress-offload-playback3 headphones">
-        <ctl name="SLIMBUS_0_RX Audio Mixer MultiMedia10" value="1" />
+        <ctl name="SLIMBUS_5_RX Audio Mixer MultiMedia10" value="1" />
     </path>
 
     <path name="compress-offload-playback3 speaker-and-headphones">
@@ -675,11 +699,15 @@
     </path>
 
     <path name="compress-offload-playback4">
+        
+    </path>
+
+    <path name="compress-offload-playback4 speaker">
         <ctl name="QUAT_MI2S_RX Audio Mixer MultiMedia11" value="1" />
     </path>
 
     <path name="compress-offload-playback4 headphones">
-        <ctl name="SLIMBUS_0_RX Audio Mixer MultiMedia11" value="1" />
+        <ctl name="SLIMBUS_5_RX Audio Mixer MultiMedia11" value="1" />
     </path>
 
     <path name="compress-offload-playback4 speaker-and-headphones">
@@ -719,11 +747,15 @@
     </path>
 
     <path name="compress-offload-playback5">
+        
+    </path>
+
+    <path name="compress-offload-playback5 speaker">
         <ctl name="QUAT_MI2S_RX Audio Mixer MultiMedia12" value="1" />
     </path>
 
     <path name="compress-offload-playback5 headphones">
-        <ctl name="SLIMBUS_0_RX Audio Mixer MultiMedia12" value="1" />
+        <ctl name="SLIMBUS_5_RX Audio Mixer MultiMedia12" value="1" />
     </path>
 
     <path name="compress-offload-playback5 speaker-and-headphones">
@@ -763,11 +795,15 @@
     </path>
 
     <path name="compress-offload-playback6">
+        
+    </path>
+
+    <path name="compress-offload-playback6 speaker">
         <ctl name="QUAT_MI2S_RX Audio Mixer MultiMedia13" value="1" />
     </path>
 
     <path name="compress-offload-playback6 headphones">
-        <ctl name="SLIMBUS_0_RX Audio Mixer MultiMedia13" value="1" />
+        <ctl name="SLIMBUS_5_RX Audio Mixer MultiMedia13" value="1" />
     </path>
 
     <path name="compress-offload-playback6 speaker-and-headphones">
@@ -807,11 +843,15 @@
     </path>
 
     <path name="compress-offload-playback7">
+        
+    </path>
+
+    <path name="compress-offload-playback7 speaker">
         <ctl name="QUAT_MI2S_RX Audio Mixer MultiMedia14" value="1" />
     </path>
 
     <path name="compress-offload-playback7 headphones">
-        <ctl name="SLIMBUS_0_RX Audio Mixer MultiMedia14" value="1" />
+        <ctl name="SLIMBUS_5_RX Audio Mixer MultiMedia14" value="1" />
     </path>
 
     <path name="compress-offload-playback7 speaker-and-headphones">
@@ -851,11 +891,15 @@
     </path>
 
     <path name="compress-offload-playback8">
+        
+    </path>
+
+    <path name="compress-offload-playback8 speaker">
         <ctl name="QUAT_MI2S_RX Audio Mixer MultiMedia15" value="1" />
     </path>
 
     <path name="compress-offload-playback8 headphones">
-        <ctl name="SLIMBUS_0_RX Audio Mixer MultiMedia15" value="1" />
+        <ctl name="SLIMBUS_5_RX Audio Mixer MultiMedia15" value="1" />
     </path>
 
     <path name="compress-offload-playback8 speaker-and-headphones">
@@ -895,11 +939,15 @@
     </path>
 
     <path name="compress-offload-playback9">
+        
+    </path>
+
+    <path name="compress-offload-playback9 speaker">
         <ctl name="QUAT_MI2S_RX Audio Mixer MultiMedia16" value="1" />
     </path>
 
     <path name="compress-offload-playback9 headphones">
-        <ctl name="SLIMBUS_0_RX Audio Mixer MultiMedia16" value="1" />
+        <ctl name="SLIMBUS_5_RX Audio Mixer MultiMedia16" value="1" />
     </path>
 
     <path name="compress-offload-playback9 speaker-and-headphones">
@@ -1473,33 +1521,33 @@
     </path>
 
     <path name="dmic1">
-        <ctl name="AIF1_CAP Mixer SLIM TX10" value="1"/>
+        <ctl name="AIF1_CAP Mixer SLIM TX7" value="1"/>
         <ctl name="SLIM_0_TX Channels" value="One" />
-        <ctl name="SLIM TX10 MUX" value="DEC6" />
-        <ctl name="DEC6 MUX" value="DMIC6" />
-        <ctl name="IIR1 INP1 MUX" value="DEC6" />
+        <ctl name="SLIM TX7 MUX" value="DEC7" />
+        <ctl name="DEC7 MUX" value="DMIC1" />
+        <ctl name="IIR1 INP1 MUX" value="DEC7" />
     </path>
 
     <path name="dmic2">
-        <ctl name="AIF1_CAP Mixer SLIM TX7" value="1"/>
+        <ctl name="AIF1_CAP Mixer SLIM TX8" value="1"/>
         <ctl name="SLIM_0_TX Channels" value="One" />
-        <ctl name="SLIM TX7 MUX" value="DEC8" />
+        <ctl name="SLIM TX8 MUX" value="DEC8" />
         <ctl name="DEC8 MUX" value="DMIC2" />
         <ctl name="IIR1 INP1 MUX" value="DEC8" />
     </path>
 
     <path name="dmic3">
-        <ctl name="AIF1_CAP Mixer SLIM TX7" value="1"/>
+        <ctl name="AIF1_CAP Mixer SLIM TX9" value="1"/>
         <ctl name="SLIM_0_TX Channels" value="One" />
-        <ctl name="SLIM TX7 MUX" value="DEC10" />
+        <ctl name="SLIM TX9 MUX" value="DEC10" />
         <ctl name="DEC10 MUX" value="DMIC3" />
         <ctl name="IIR1 INP1 MUX" value="DEC10" />
     </path>
 
     <path name="dmic4">
-        <ctl name="AIF1_CAP Mixer SLIM TX7" value="1"/>
+        <ctl name="AIF1_CAP Mixer SLIM TX10" value="1"/>
         <ctl name="SLIM_0_TX Channels" value="One" />
-        <ctl name="SLIM TX7 MUX" value="DEC7" />
+        <ctl name="SLIM TX10 MUX" value="DEC9" />
         <ctl name="DEC9 MUX" value="DMIC4" />
         <ctl name="IIR1 INP1 MUX" value="DEC9" />
     </path>
@@ -1532,6 +1580,7 @@
     </path>
 
     <path name="speaker">
+        <ctl name="QUAT MI2S RX Format" value="LPCM" />
         <ctl name="TAS2552 Mute" value="0" />
         <path name="speaker-gain-default" />
     </path>
@@ -1573,8 +1622,8 @@
     </path>
 
     <path name="speaker-mic">
-        <path name="dmic5" />
-        <ctl name="DEC5 Volume" value="84" />
+        <path name="dmic3" />
+        <ctl name="DEC10 Volume" value="98" />
     </path>
 
     <path name="speaker-mic-liquid">
@@ -1622,7 +1671,7 @@
 
     <path name="handset-mic">
         <path name="dmic1" />
-        <ctl name="DEC6 Volume" value="110" />
+        <ctl name="DEC7 Volume" value="98" />
     </path>
 
     <path name="handset-mic-cdp">
@@ -1649,11 +1698,11 @@
     </path>
 
     <path name="headphones">
-        <ctl name="SLIM RX1 MUX" value="AIF1_PB" />
-        <ctl name="SLIM RX2 MUX" value="AIF1_PB" />
-        <ctl name="SLIM_0_RX Channels" value="Two" />
-        <ctl name="RX1 MIX1 INP1" value="RX1" />
-        <ctl name="RX2 MIX1 INP1" value="RX2" />
+        <ctl name="SLIM RX3 MUX" value="AIF3_PB" />
+        <ctl name="SLIM RX4 MUX" value="AIF3_PB" />
+        <ctl name="SLIM_5_RX Channels" value="Two" />
+        <ctl name="RX1 MIX1 INP2" value="RX3" />
+        <ctl name="RX2 MIX1 INP2" value="RX4" />
         <ctl name="CLASS_H_DSM MUX" value="DSM_HPHL_RX1" />
         <ctl name="HPHL DAC Switch" value="1" />
         <ctl name="HPHR DAC Switch" value="1" />
@@ -1915,7 +1964,7 @@
 
     <path name="camcorder-mic">
         <path name="dmic3" />
-        <ctl name="DEC10 Volume" value="84" />
+        <ctl name="DEC10 Volume" value="98" />
     </path>
 
     <path name="hdmi-tx">
@@ -2162,10 +2211,10 @@
 
     <!-- TTY devices -->
     <path name="tty-headphones">
-        <ctl name="SLIM RX1 MUX" value="AIF1_PB" />
-        <ctl name="SLIM_0_RX Channels" value="One" />
-        <ctl name="RX1 MIX1 INP1" value="RX1" />
-        <ctl name="RX2 MIX1 INP1" value="RX1" />
+        <ctl name="SLIM RX3 MUX" value="AIF3_PB" />
+        <ctl name="SLIM_5_RX Channels" value="One" />
+        <ctl name="RX1 MIX1 INP2" value="RX3" />
+        <ctl name="RX2 MIX1 INP2" value="RX3" />
         <ctl name="CLASS_H_DSM MUX" value="DSM_HPHL_RX1" />
         <ctl name="HPHL DAC Switch" value="1" />
         <ctl name="HPHR DAC Switch" value="1" />
