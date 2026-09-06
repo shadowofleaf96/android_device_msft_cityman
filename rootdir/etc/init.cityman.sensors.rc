@@ -42,5 +42,5 @@ on post-fs-data
     mkdir /data/misc/sensors 0775 system system
     restorecon_recursive /data/misc/sensors
     
-    # Mag/gyro cal for sensors.talkman (sphere + ellipsoid, cal.txt v4)
-    mkdir /data/misc/talkman-sensors 0770 system system
+    # Mag/gyro cal for sensors.cityman (sphere + ellipsoid, cal.txt v4)
+    mkdir /data/misc/cityman-sensors 0770 system system

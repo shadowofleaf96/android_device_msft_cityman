@@ -12,10 +12,11 @@
 - Wi-Fi (2.4GHz and 5GHz fully working)
 - Audio (Speaker via TAS2553 on Quaternary MI2S works!)
 - Headphone Jack
+- NFC (NXP PN547 stack)
+- Sensors (Accel, Gyro, Mag, Light, Prox, Press, Temp)
 
 ### Needs Testing
 
-- NFC
 - Location (GPS)
 - Bluetooth
 - Hardware video decoding/encoding
@@ -24,7 +25,6 @@
 
 - Cellular / RIL (Shows 'No Service', enabling mobile data says 'No SIM')
 - Camera
-- Sensors
 - Others not listed as working
 
 ## Credits
