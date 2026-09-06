@@ -15,11 +15,12 @@
   - Added correct `system:system` ueventd permissions for `/dev/i2c-4` and `/dev/i2c-7` to allow the sensor HAL to communicate with the physical hardware chips.
 
 
-- Audio support! Safely ported TAS2553 speaker amplifier driver from Lumia 950 (cityman) to Lumia 950 XL (cityman).
+- Audio support! Safely ported TAS2553 speaker amplifier driver from Lumia 950 (talkman) to Lumia 950 XL (cityman).
   - Routed Quaternary MI2S backend to properly bypass the internal WCD9330 and utilize the external smart amplifier.
   - Adapted I2S pinctrl and I2C settings for the msm8994 platform.
   - Carefully rewired `mixer_paths.xml` to strip dangerous motherboard-frying controls and mix stereo channels into Mono for the loudspeaker.
   - Fixed jack switch polarity detection.
+  - **Bluetooth Audio**: Fixed A2DP media routing to Bluetooth headphones by switching the `android.hardware.bluetooth.audio` HAL from `passthrough` to `hwbinder` transport, allowing proper IPC between `audioserver` and the Bluetooth stack.
 
 ### Acknowledgments
 

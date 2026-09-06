@@ -1476,11 +1476,11 @@
     </path>
 
     <path name="dmic1">
-        <ctl name="AIF1_CAP Mixer SLIM TX7" value="1"/>
+        <ctl name="AIF1_CAP Mixer SLIM TX10" value="1"/>
         <ctl name="SLIM_0_TX Channels" value="One" />
-        <ctl name="SLIM TX7 MUX" value="DEC7" />
-        <ctl name="DEC7 MUX" value="DMIC1" />
-        <ctl name="IIR1 INP1 MUX" value="DEC7" />
+        <ctl name="SLIM TX10 MUX" value="DEC6" />
+        <ctl name="DEC6 MUX" value="DMIC6" />
+        <ctl name="IIR1 INP1 MUX" value="DEC6" />
     </path>
 
     <path name="dmic2">
@@ -1588,7 +1588,8 @@
     </path>
 
     <path name="speaker-mic">
-        <path name="dmic3" />
+        <path name="dmic5" />
+        <ctl name="DEC5 Volume" value="84" />
     </path>
 
     <path name="speaker-mic-liquid">
@@ -1638,7 +1639,7 @@
 
     <path name="handset-mic">
         <path name="dmic1" />
-        <ctl name="DEC7 Volume" value="84" />
+        <ctl name="DEC6 Volume" value="110" />
     </path>
 
     <path name="handset-mic-cdp">
