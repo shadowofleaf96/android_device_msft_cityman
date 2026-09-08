@@ -3,6 +3,16 @@
 ## [Unreleased]
 
 ### Added
+- **RIL / Telephony (Spoofing)**: Implemented a custom `libril_wrapper.so` interceptor daemon.
+  - Successfully intercepted QMI RIL communications to force the `gsm.sim.state` to `READY` and `LOADED`.
+  - Spoofed the `RIL_REQUEST_VOICE_REGISTRATION_STATE` responses to return a registered state and hardcoded the MCC/MNC to 208/01 (Orange) to eliminate the "No Service" UI grey-out issue.
+  - *Note: This is a UI/framework spoof only; the underlying baseband is still not scanning L1 WWAN due to missing Windows Phone DIAG NV initialization.*
+
+- **Power Management (Sensors)**: Implemented a `libpm_wrapper.so` to shim power management calls.
+  - Bypassed the restrictive `libvss_nv_core` and `libsensor1` crashes by dropping unsupported proprietary calls.
+
+- **Camera Setup**: Swapped out the IMX377 camera blobs for the correct IMX230 camera blobs in the build configuration, preparing the framework for the 20MP Sony sensor bringup.
+
 - **Charging**: Enabled 12W fast charging support.
 
 - **NFC Support**: Successfully brought up the NXP NFC stack for Lumia 950 XL!
