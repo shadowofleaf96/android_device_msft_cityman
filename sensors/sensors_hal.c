@@ -26,7 +26,7 @@
  * whether the phone is moving.
  */
 
-#define LOG_TAG "TalkmanSensors"
+#define LOG_TAG "CitymanSensors"
 
 #include <errno.h>
 #include <fcntl.h>

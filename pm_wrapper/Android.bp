@@ -1,0 +1,6 @@
+cc_library_shared {
+    name: "libperipheral_client",
+    srcs: ["pm_wrapper.c"],
+    shared_libs: ["liblog", "libdl"],
+    vendor: true,
+}

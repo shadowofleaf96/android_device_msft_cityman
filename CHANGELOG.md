@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- **Charging**: Enabled 12W fast charging support.
 
 - **NFC Support**: Successfully brought up the NXP NFC stack for Lumia 950 XL!
   - Switched to the NXP-specific NFC HAL (`nfc_nci_nxp`) and included `android.hardware.nfc@1.2-service`.

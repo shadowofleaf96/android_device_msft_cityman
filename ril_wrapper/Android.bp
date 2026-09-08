@@ -1,0 +1,18 @@
+cc_library_shared {
+    name: "libril_wrapper",
+    srcs: ["ril_wrapper.c"],
+    shared_libs: [
+        "liblog",
+        "libdl",
+    ],
+    header_libs: [
+        "ril_headers",
+        "libhardware_legacy_headers",
+    ],
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wno-unused-parameter",
+    ],
+    compile_multilib: "64",
+}

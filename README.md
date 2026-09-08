@@ -17,6 +17,8 @@
 - Sensors (Accel, Gyro, Mag, Light, Prox, Press, Temp)
 - Bluetooth
 - Bluetooth Headphones (A2DP Audio Routing)
+- 12W Fast Charging
+
 
 ### Needs Testing
 
