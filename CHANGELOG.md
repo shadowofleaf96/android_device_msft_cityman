@@ -32,8 +32,7 @@
   - Reverted VFE (Video Front End) binding back to `vfe46` in the device tree as VFE44 was causing hardware timeouts.
   - Intercepted Windows Camera HAL configuration blocks (`VFE_WRITE` and `VFE_WRITE_MB`) in `msm_isp_util.c` that were improperly overwriting the CAMIF geometry region (`0x3B4`) with a tiny 1215x1695 PDAF crop.
   - Implemented dynamic cache restoration for CAMIF config registers (`0x3B4`, `0x3B8`, `0x3BC`) to preserve the correct 5344x4016 full-sensor output size.
-  - Enabled triple-LED torch and flash control.
-  - *Note*: Rear camera sensor (IMX230) initializes and binds to ISP hardware, but preview viewfinder currently renders a black screen. Front-facing camera and Iris scanner are not working.
+  - *Note*: Rear camera sensor (IMX230) initializes and binds to ISP hardware, but preview viewfinder currently renders a black screen. Front-facing camera and Iris scanner are not working. Flashlight/Torch toggle is greyed out ("Camera in use") due to camera HAL lock.
 
 - **Power Management & Charging**: Enabled 13W fast charging support and fixed battery capacity reporting.
   - Integrated the correct Microsoft BV-T4D 3340mAh battery capacity profile for the PMI8994 fuel gauge, fixing coulomb counter scaling and capacity readings.

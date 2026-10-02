@@ -27,8 +27,6 @@ Device tree and hardware support for the Microsoft Lumia 950 XL (`cityman`) powe
   - 3.5mm Headphone Jack audio playback and headset microphone recording.
   - Four calibrated digital microphones (`dmic1`-`dmic4`) for ambient and directional capture.
   - Bluetooth A2DP audio streaming with `hwbinder` HAL transport.
-- **Flashlight / Torch**:
-  - Natural triple-LED torch via Quick Settings and sysfs.
 - **Display & Touch**:
   - 5.7" WQHD AMOLED display (1440x2560) with hardware composer.
   - Capacitive multi-touch screen with wakeup support.
@@ -61,6 +59,7 @@ Device tree and hardware support for the Microsoft Lumia 950 XL (`cityman`) powe
   - Rear Camera (20MP PureView Sony IMX230): Sensor initializes and binds to ISP, but viewfinder shows a black preview.
   - Front-Facing Camera: Not working.
   - Iris Scanner: Not working.
+  - Flashlight / Torch: Not working (Quick Settings tile is greyed out showing "Camera in use").
 - **VoLTE / VoWiFi**: Carrier-specific IMS profile customization (standard Circuit-Switched Fallback handles 2G/3G voice calls reliably).
 
 ---
