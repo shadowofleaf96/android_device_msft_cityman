@@ -57,7 +57,10 @@ Device tree and hardware support for the Microsoft Lumia 950 XL (`cityman`) powe
 
 ### Not Working / In Progress
 
-- **Camera**: Black preview/viewfinder across rear and front cameras (sensor initializes and binds to ISP, but image frames do not render to preview surface; in progress).
+- **Camera & Imaging**:
+  - Rear Camera (20MP PureView Sony IMX230): Sensor initializes and binds to ISP, but viewfinder shows a black preview.
+  - Front-Facing Camera: Not working.
+  - Iris Scanner: Not working.
 - **VoLTE / VoWiFi**: Carrier-specific IMS profile customization (standard Circuit-Switched Fallback handles 2G/3G voice calls reliably).
 
 ---
