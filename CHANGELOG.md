@@ -28,11 +28,12 @@
   - Remapped `dmic1`-`dmic4` (Digital Microphones) to their correct hardware nodes in `mixer_paths.xml` (fixing a wrong mapping to `DMIC6`).
   - Tuned digital microphone gain (`DEC` volume) from `110` (+26dB) down to `98` (+14dB) to eliminate static noise while preserving recording sensitivity.
 
-- **Camera Bringup**: Brought up the Sony IMX230 20MP PureView sensor!
+- **Camera Bringup (Work In Progress)**:
   - Reverted VFE (Video Front End) binding back to `vfe46` in the device tree as VFE44 was causing hardware timeouts.
   - Intercepted Windows Camera HAL configuration blocks (`VFE_WRITE` and `VFE_WRITE_MB`) in `msm_isp_util.c` that were improperly overwriting the CAMIF geometry region (`0x3B4`) with a tiny 1215x1695 PDAF crop.
   - Implemented dynamic cache restoration for CAMIF config registers (`0x3B4`, `0x3B8`, `0x3BC`) to preserve the correct 5344x4016 full-sensor output size.
-  - Fixed front-facing and rear cameras (smooth viewfinder, high-resolution snapshots, natural triple-LED flash).
+  - Enabled triple-LED torch and flash control.
+  - *Note*: Sony IMX230 sensor initializes and binds to ISP hardware, but preview viewfinder currently renders a black screen (actively in progress).
 
 - **Power Management & Charging**: Enabled 13W fast charging support and fixed battery capacity reporting.
   - Integrated the correct Microsoft BV-T4D 3340mAh battery capacity profile for the PMI8994 fuel gauge, fixing coulomb counter scaling and capacity readings.

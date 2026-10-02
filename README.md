@@ -27,10 +27,8 @@ Device tree and hardware support for the Microsoft Lumia 950 XL (`cityman`) powe
   - 3.5mm Headphone Jack audio playback and headset microphone recording.
   - Four calibrated digital microphones (`dmic1`-`dmic4`) for ambient and directional capture.
   - Bluetooth A2DP audio streaming with `hwbinder` HAL transport.
-- **Camera (Rear & Front)**:
-  - Rear 20MP PureView camera (Sony IMX230) with autofocus, optical image stabilization, high-resolution snapshot, and smooth viewfinder.
-  - Natural triple-LED flash and torch.
-  - Front-facing camera.
+- **Flashlight / Torch**:
+  - Natural triple-LED torch via Quick Settings and sysfs.
 - **Display & Touch**:
   - 5.7" WQHD AMOLED display (1440x2560) with hardware composer.
   - Capacitive multi-touch screen with wakeup support.
@@ -57,9 +55,10 @@ Device tree and hardware support for the Microsoft Lumia 950 XL (`cityman`) powe
 
 ---
 
-### Known Issues / In Progress
+### Not Working / In Progress
 
-- Carrier-specific VoLTE/VoWiFi profile customization (standard CSFB handles voice calls reliably).
+- **Camera**: Black preview/viewfinder across rear and front cameras (sensor initializes and binds to ISP, but image frames do not render to preview surface; in progress).
+- **VoLTE / VoWiFi**: Carrier-specific IMS profile customization (standard Circuit-Switched Fallback handles 2G/3G voice calls reliably).
 
 ---
 
