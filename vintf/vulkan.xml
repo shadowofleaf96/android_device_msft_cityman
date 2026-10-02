@@ -1,0 +1,6 @@
+<manifest version="1.0" type="device">
+    <hal format="native">
+        <name>vulkan</name>
+        <version>1.0</version>
+    </hal>
+</manifest>

@@ -39,6 +39,7 @@
 #include <sys/sysinfo.h>
 #include "QCamera2HWI.h"
 #include "QCameraParameters.h"
+#include "QCameraTorch.h"
 
 #define ASPECT_TOLERANCE 0.001
 
@@ -421,6 +422,10 @@ const char QCameraParameters::KEY_QC_USER_SETTING[] = "user-setting";
 const char QCameraParameters::KEY_QC_WB_CCT_MODE[] = "color-temperature";
 const char QCameraParameters::KEY_QC_WB_GAIN_MODE[] = "rbgb-gains";
 
+//KEY to share HFR batch size with video encoder.
+const char QCameraParameters::KEY_QC_VIDEO_BATCH_SIZE[] = "video-batch-size";
+
+
 static const char* portrait = "portrait";
 static const char* landscape = "landscape";
 
@@ -762,7 +767,7 @@ const QCameraParameters::QCameraMap<int>
  *==========================================================================*/
 QCameraParameters::QCameraParameters()
     : CameraParameters(),
-      m_reprocScaleParam(),
+      m_reprocScaleParam(this),
       m_pCapability(NULL),
       m_pCamOpsTbl(NULL),
       m_pParamHeap(NULL),
@@ -822,11 +827,13 @@ QCameraParameters::QCameraParameters()
       m_bAeBracketingEnabled(false),
       mFlashValue(CAM_FLASH_MODE_OFF),
       mFlashDaemonValue(CAM_FLASH_MODE_OFF),
+      m_bLedTorchOnly(false),
       mHfrMode(CAM_HFR_MODE_OFF),
       m_bHDRModeSensor(true),
       mOfflineRAW(false),
       m_bTruePortraitOn(false),
-      mCds_mode(CAM_CDS_MODE_OFF)
+      mCds_mode(CAM_CDS_MODE_OFF),
+      mFocusState(CAM_AF_SCANNING)
 {
     char value[PROPERTY_VALUE_MAX];
     // TODO: may move to parameter instead of sysprop
@@ -871,7 +878,7 @@ QCameraParameters::QCameraParameters()
  *==========================================================================*/
 QCameraParameters::QCameraParameters(const String8 &params)
     : CameraParameters(params),
-    m_reprocScaleParam(),
+    m_reprocScaleParam(this),
     m_pCapability(NULL),
     m_pCamOpsTbl(NULL),
     m_pParamHeap(NULL),
@@ -924,12 +931,14 @@ QCameraParameters::QCameraParameters(const String8 &params)
     m_bAeBracketingEnabled(false),
     mFlashValue(CAM_FLASH_MODE_OFF),
     mFlashDaemonValue(CAM_FLASH_MODE_OFF),
+    m_bLedTorchOnly(false),
     mHfrMode(CAM_HFR_MODE_OFF),
     m_bHDRModeSensor(true),
     mOfflineRAW(false),
     m_bTruePortraitOn(false),
     mCds_mode(CAM_CDS_MODE_OFF),
-    mParmEffect(CAM_EFFECT_MODE_OFF)
+    mParmEffect(CAM_EFFECT_MODE_OFF),
+    mFocusState(CAM_AF_SCANNING)
 {
     memset(&m_LiveSnapshotSize, 0, sizeof(m_LiveSnapshotSize));
     memset(&m_default_fps_range, 0, sizeof(m_default_fps_range));
@@ -2097,10 +2106,15 @@ bool QCameraParameters::UpdateHFRFrameRate(const QCameraParameters& params)
         CDBG_HIGH("HFR mode is OFF");
     }
 
+    m_hfrFpsRange.min_fps = (float)parm_minfps;
+    m_hfrFpsRange.max_fps = (float)parm_maxfps;
     if (m_bHfrMode && (mHfrMode > CAM_HFR_MODE_120FPS)
             && (parm_maxfps != 0)) {
-        /* Setting Buffer batch count to use batch mode for higher fps*/
+        //Configure buffer batch count to use batch mode for higher fps
         setBufBatchCount((int8_t)(m_hfrFpsRange.video_max_fps / parm_maxfps));
+    } else {
+        //Reset batch count and update KEY for encoder
+        setBufBatchCount(0);
     }
 
     return updateNeeded;
@@ -3220,6 +3234,9 @@ int32_t QCameraParameters::setSceneMode(const QCameraParameters& params)
     CDBG_HIGH("%s: str - %s, prev_str - %s",__func__, str, prev_str);
 
     if (str != NULL) {
+        if (m_bRecordingHint_new && (strcmp(str, SCENE_MODE_HDR) == 0)) {
+            str = SCENE_MODE_AUTO;
+        }
         if (prev_str == NULL ||
             strcmp(str, prev_str) != 0) {
 
@@ -3808,6 +3825,10 @@ int32_t QCameraParameters::setRecordingHint(const QCameraParameters& params)
                 setRecordingHintValue(value);
                 if (getFaceDetectionOption() == true) {
                     setFaceDetection(value > 0 ? false : true, false);
+                }
+                if((getSelectedScene() != CAM_SCENE_MODE_OFF) && (value != 0)) {
+                    CDBG_HIGH("%s: %d: Setting scene mode to auto", __func__, __LINE__);
+                    setSceneMode(SCENE_MODE_AUTO);
                 }
                 if (m_bDISEnabled) {
                     CDBG_HIGH("%s: %d: Setting DIS value again", __func__, __LINE__);
@@ -4979,6 +5000,25 @@ int32_t QCameraParameters::initDefaultParameters()
                PARAM_MAP_SIZE(FLASH_MODES_MAP));
        set(KEY_SUPPORTED_FLASH_MODES, flashValues);
        setFlash(FLASH_MODE_OFF);
+    } else if (QCameraTorch::hasTorch()) {
+        // No flash driver in mm-camera, but the board has a GPIO torch LED.
+        // Advertise off/auto/on/torch so cameraserver sees a flash unit
+        // (android.flash.info.available). torch is driven from updateFlash;
+        // on/auto are a software strobe around the still capture in
+        // QCamera2HardwareInterface::ledStrobeStart (auto decides from the
+        // AEC exposure/ISO the daemon reports in preview metadata).
+        m_bLedTorchOnly = true;
+        String8 flashValues(FLASH_MODE_OFF);
+        flashValues.append(",");
+        flashValues.append(FLASH_MODE_AUTO);
+        flashValues.append(",");
+        flashValues.append(FLASH_MODE_ON);
+        flashValues.append(",");
+        flashValues.append(FLASH_MODE_TORCH);
+        set(KEY_SUPPORTED_FLASH_MODES, flashValues);
+        setFlash(FLASH_MODE_OFF);
+        ALOGI("%s: backend has no flash, using led:flash_torch (%s)",
+                __func__, flashValues.string());
     } else {
         ALOGE("%s: supported flash modes cnt is 0!!!", __func__);
     }
@@ -5407,6 +5447,9 @@ int32_t QCameraParameters::initDefaultParameters()
 
     set(KEY_QC_SUPPORTED_VIDEO_ROTATION_VALUES, videoRotationValues.string());
     set(KEY_QC_VIDEO_ROTATION, VIDEO_ROTATION_0);
+
+    //Default set for video batch size
+    set(KEY_QC_VIDEO_BATCH_SIZE, 0);
     return rc;
 }
 
@@ -8418,7 +8461,28 @@ int32_t QCameraParameters::updateFlash(bool commitSettings)
         value = mFlashValue;
     }
 
-    if (value != mFlashDaemonValue) {
+    if (m_bLedTorchOnly) {
+        // mm-camera has no flash driver here. Only torch keeps the GPIO LED
+        // on during preview; on/auto leave it off here and are strobed by
+        // QCamera2HWI at capture time. Never send CAM_INTF_PARM_LED_MODE to
+        // the daemon. Write the LED only when its steady state changes so a
+        // mode switch between off/auto/on cannot cut a strobe short.
+        if (value != mFlashDaemonValue) {
+            bool on = (value == CAM_FLASH_MODE_TORCH);
+            bool wasOn = (mFlashDaemonValue == CAM_FLASH_MODE_TORCH);
+            CDBG_HIGH("%s: led:flash_torch %s (flash value %d)", __func__,
+                    on ? "on" : "off", value);
+            if ((on != wasOn) && (QCameraTorch::setTorch(on) != 0)) {
+                ALOGE("%s: failed to drive led:flash_torch", __func__);
+                return BAD_VALUE;
+            }
+            mFlashDaemonValue = value;
+        }
+    } else if (value != mFlashDaemonValue) {
+        if (isAFRunning()) {
+            CDBG("%s: AF is running, cancel AF before changing flash mode ", __func__);
+            m_pCamOpsTbl->ops->cancel_auto_focus(m_pCamOpsTbl->camera_handle);
+        }
         CDBG("%s: Setting Flash value %d", __func__, value);
         if (ADD_SET_PARAM_ENTRY_TO_BATCH(m_pParamBuf, CAM_INTF_PARM_LED_MODE, value)) {
             ALOGE("%s:Failed to set led mode", __func__);
@@ -8438,6 +8502,34 @@ int32_t QCameraParameters::updateFlash(bool commitSettings)
     }
 
     return rc;
+}
+
+/*===========================================================================
+ * FUNCTION   : getLedStrobeMode
+ *
+ * DESCRIPTION: flash mode the HAL has to realise itself on led:flash_torch
+ *              for the next still capture. Only meaningful on boards where
+ *              mm-camera has no flash driver (m_bLedTorchOnly). Uses the same
+ *              exclusions as updateFlash: bracketing captures never flash.
+ *
+ * PARAMETERS : none
+ *
+ * RETURN     : CAM_FLASH_MODE_ON or CAM_FLASH_MODE_AUTO when the LED must be
+ *              strobed, CAM_FLASH_MODE_OFF otherwise (flash off, torch
+ *              already lit by updateFlash, or a bracketing mode)
+ *==========================================================================*/
+int32_t QCameraParameters::getLedStrobeMode()
+{
+    if (!m_bLedTorchOnly ||
+            isHDREnabled() || m_bAeBracketingEnabled || m_bAFBracketingOn ||
+            m_bOptiZoomOn || m_bReFocusOn) {
+        return CAM_FLASH_MODE_OFF;
+    }
+    if ((mFlashValue == CAM_FLASH_MODE_ON) ||
+            (mFlashValue == CAM_FLASH_MODE_AUTO)) {
+        return mFlashValue;
+    }
+    return CAM_FLASH_MODE_OFF;
 }
 
 /*===========================================================================
@@ -8825,22 +8917,11 @@ int32_t QCameraParameters::getStreamFormat(cam_stream_type_t streamType,
 
     format = CAM_FORMAT_MAX;
     switch (streamType) {
+    case CAM_STREAM_TYPE_ANALYSIS:
     case CAM_STREAM_TYPE_PREVIEW:
     case CAM_STREAM_TYPE_POSTVIEW:
-    case CAM_STREAM_TYPE_CALLBACK:
         format = mPreviewFormat;
         break;
-    case CAM_STREAM_TYPE_ANALYSIS:
-        if (m_pCapability->analysis_recommended_format ==
-                CAM_FORMAT_Y_ONLY) {
-            format = m_pCapability->analysis_recommended_format;
-        } else {
-            ALOGE("%s:%d invalid analysis_recommended_format %d\n",
-                    __func__, __LINE__,
-                    m_pCapability->analysis_recommended_format);
-            format = mPreviewFormat;
-        }
-      break;
     case CAM_STREAM_TYPE_SNAPSHOT:
         if ( mPictureFormat == CAM_FORMAT_YUV_422_NV16 ) {
             format = CAM_FORMAT_YUV_422_NV16;
@@ -10607,7 +10688,7 @@ int32_t QCameraParameters::commitParamChanges()
  *
  * RETURN     : none
  *==========================================================================*/
-QCameraReprocScaleParam::QCameraReprocScaleParam()
+QCameraReprocScaleParam::QCameraReprocScaleParam(QCameraParameters *parent __unused)
   : mScaleEnabled(false),
     mIsUnderScaling(false),
     mNeedScaleCnt(0),
@@ -11830,6 +11911,7 @@ void QCameraParameters::setBufBatchCount(int8_t buf_cnt)
 
     if (!(count != 0 || buf_cnt > CAMERA_MIN_BATCH_COUNT)) {
         CDBG_HIGH("%s : Buffer batch count = %d", __func__, mBufBatchCnt);
+        set(KEY_QC_VIDEO_BATCH_SIZE, mBufBatchCnt);
         return;
     }
 
@@ -11841,12 +11923,14 @@ void QCameraParameters::setBufBatchCount(int8_t buf_cnt)
     if (count > 0) {
         mBufBatchCnt = count;
         CDBG_HIGH("%s : Buffer batch count = %d", __func__, mBufBatchCnt);
+        set(KEY_QC_VIDEO_BATCH_SIZE, mBufBatchCnt);
         return;
     }
 
     if (buf_cnt > CAMERA_MIN_BATCH_COUNT) {
         mBufBatchCnt = buf_cnt;
         CDBG_HIGH("%s : Buffer batch count = %d", __func__, mBufBatchCnt);
+        set(KEY_QC_VIDEO_BATCH_SIZE, mBufBatchCnt);
         return;
     }
 }
@@ -12121,5 +12205,25 @@ int32_t QCameraParameters::setCDSMode(int32_t cds_mode, bool initCommit)
 
     return rc;
 }
+
+/*===========================================================================
+ * FUNCTION   : isAFRunning
+ *
+ * DESCRIPTION: if AF is in progress while in Auto/Macro focus modes
+ *
+ * PARAMETERS : none
+ *
+ * RETURN     : true: AF in progress
+ *              false: AF not in progress
+ *==========================================================================*/
+bool QCameraParameters::isAFRunning()
+{
+    bool isAFInProgress = ((mFocusState == CAM_AF_SCANNING) &&
+            ((mFocusMode == CAM_FOCUS_MODE_AUTO) ||
+            (mFocusMode == CAM_FOCUS_MODE_MACRO)));
+
+    return isAFInProgress;
+}
+
 
 }; // namespace qcamera

@@ -1,0 +1,26 @@
+// Cityman Vulkan 1.0 32-bit offscreen CLEAR+triangle+readback (armeabi-v7a).
+// Command-line native. Not in PRODUCT_PACKAGES. HWUI stays GLES.
+// Do not add this to vulkan/Android.bp.
+
+cc_binary {
+    name: "cityman-vk-tri32",
+    srcs: ["main.c"],
+    vendor: false,
+    proprietary: false,
+    compile_multilib: "32",
+
+    shared_libs: [
+        "liblog",
+        "libvulkan",
+    ],
+
+    header_libs: [
+        "vulkan_headers",
+    ],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-DLOG_TAG=\"CitymanVkTri32\"",
+    ],
+}

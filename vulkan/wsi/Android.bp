@@ -1,0 +1,26 @@
+// Optional WSI instance-extension probe. Not in PRODUCT_PACKAGES.
+// Build with: m cityman-wsi-check
+// Do not add this to cityman-vulkan.mk (other agent).
+
+cc_binary {
+    name: "cityman-wsi-check",
+    srcs: ["wsi_check.c"],
+    vendor: false,
+    proprietary: false,
+    compile_multilib: "64",
+
+    shared_libs: [
+        "liblog",
+        "libvulkan",
+    ],
+
+    header_libs: [
+        "vulkan_headers",
+    ],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-DLOG_TAG=\"CitymanWsi\"",
+    ],
+}

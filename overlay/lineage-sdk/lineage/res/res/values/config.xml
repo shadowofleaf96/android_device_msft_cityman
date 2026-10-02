@@ -52,6 +52,29 @@
          LIGHTS_ADJUSTABLE_BATTERY_LED_BRIGHTNESS = 128
          For example, a device with notification and battery lights that supports
          pulsating and RGB control would set this config to 75. -->
-    <integer name="config_deviceLightCapabilities">0</integer>
+    <!-- RGB notification (1) + RGB battery (2) + battery LED (64). PMI8994 RGB. -->
+    <integer name="config_deviceLightCapabilities">67</integer>
+
+    <!-- Prox-on-wake disabled -->
+    <bool name="config_proximityCheckOnWake">false</bool>
+    <integer name="config_proximityCheckTimeout">250</integer>
+    <bool name="config_proximityCheckOnWakeEnabledByDefault">false</bool>
+
+    <!-- LiveDisplay: CAF MDSS on cityman has no /sys/class/graphics/fb0/color_temp backend -->
+    <bool name="config_enableLiveDisplay">false</bool>
+    <bool name="config_defaultAutoOutdoorMode">false</bool>
+    <bool name="config_defaultColorEnhancement">false</bool>
+    <bool name="config_defaultCABC">false</bool>
+
+    <!--
+         Hardware keys bit field:
+         1 Home, 2 Back, 4 Menu, 8 Assist, 16 App switch, 32 Camera, 64 Volume.
+         Cityman: no capacitive Home/Back/Menu. SHOT GPIO4 = CAMERA (32).
+         VOL_UP GPIO3 + PON RESIN VOL_DOWN = Volume (64). Sum 96.
+         FOCUS GPIO5 is KEY_FOCUS 528 in gpio-keys.kl; lineage-sdk has no FOCUS mask.
+    -->
+    <integer name="config_deviceHardwareKeys">96</integer>
+    <!-- SHOT + volume can wake; power is PON, not this mask. No nav keys. -->
+    <integer name="config_deviceHardwareWakeKeys">96</integer>
 
 </resources>

@@ -1,0 +1,30 @@
+// Cityman Vulkan 1.0 clear+triangle bring-up (system binary).
+// Command-line native: window-less offscreen CLEAR + optional draw, then
+// HOST_VISIBLE readback / PPM. Android WSI runs only after enumerate > 0
+// and a real ANativeWindow is supplied. Not in PRODUCT_PACKAGES.
+
+cc_binary {
+    name: "cityman-vk-tri",
+    srcs: ["main.cpp"],
+    vendor: false,
+    proprietary: false,
+    compile_multilib: "64",
+
+    shared_libs: [
+        "liblog",
+        "libvulkan",
+    ],
+
+    header_libs: [
+        "vulkan_headers",
+    ],
+
+    local_include_dirs: ["."],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-DLOG_TAG=\"CitymanVkTri\"",
+        "-DVK_USE_PLATFORM_ANDROID_KHR",
+    ],
+}

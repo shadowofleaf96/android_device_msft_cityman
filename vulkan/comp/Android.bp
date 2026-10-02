@@ -1,0 +1,29 @@
+// cityman Vulkan 1.0 compute fill + host readback (system binary).
+// Build: mka cityman-vk-comp
+// Not in PRODUCT_PACKAGES. Do not add this to cityman-vulkan.mk.
+// Do not set ro.hwui.use_vulkan.
+
+cc_binary {
+    name: "cityman-vk-comp",
+    srcs: ["main.c"],
+    vendor: false,
+    proprietary: false,
+    compile_multilib: "64",
+
+    shared_libs: [
+        "liblog",
+        "libvulkan",
+    ],
+
+    header_libs: [
+        "vulkan_headers",
+    ],
+
+    local_include_dirs: ["."],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-DLOG_TAG=\"citymanVkComp\"",
+    ],
+}

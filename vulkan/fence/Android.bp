@@ -1,0 +1,27 @@
+// cityman Vulkan 1.0 empty-submit fence wait (system binary).
+// Build with: m cityman-vk-fence
+// Not in PRODUCT_PACKAGES. Do not add this to cityman-vulkan.mk.
+// Do not set ro.hwui.use_vulkan.
+
+cc_binary {
+    name: "cityman-vk-fence",
+    srcs: ["fence.c"],
+    vendor: false,
+    proprietary: false,
+    compile_multilib: "64",
+
+    shared_libs: [
+        "liblog",
+        "libvulkan",
+    ],
+
+    header_libs: [
+        "vulkan_headers",
+    ],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-DLOG_TAG=\"citymanVkFence\"",
+    ],
+}

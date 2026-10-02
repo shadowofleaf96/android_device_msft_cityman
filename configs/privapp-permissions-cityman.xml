@@ -77,4 +77,7 @@
         <permission name="android.permission.WRITE_APN_SETTINGS"/>
         <permission name="android.permission.WRITE_SECURE_SETTINGS"/>
     </privapp-permissions>
+     <privapp-permissions package="org.lineageos.snap">
+        <permission name="android.permission.SYSTEM_CAMERA"/>
+    </privapp-permissions>
 </permissions>

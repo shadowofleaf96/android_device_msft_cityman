@@ -75,14 +75,20 @@ Only the three quirks included above are recognized at this point:
     matching surfaceflinger support that can render the custom format to
     a texture and possibly other code, so just DON'T USE THIS QUIRK.
 
+-->
 
+<!--
+     MSM8992 Venus leftover (VFE44, not Spectra 8996 4K60).
+     CAF 8992/8994: h264/hevc/vp8 3840x2160@30 = 972000 MB/s (16x16).
+     Parenthetical 4096x2160 is 24 fps at the same load, not 4K60.
+     No OMX.qcom.video.encoder.hevc on this Venus.
 -->
 
 <MediaCodecs>
     <Include href="media_codecs_google_audio.xml" />
     <Include href="media_codecs_google_telephony.xml" />
     <Settings>
-        <Setting name="max-video-encoder-input-buffers" value="9" />
+        <Setting name="max-video-encoder-input-buffers" value="11" />
     </Settings>
     <Encoders>
         <MediaCodec name="OMX.qcom.video.encoder.mpeg4" type="video/mp4v-es" >
@@ -108,11 +114,11 @@ Only the three quirks included above are recognized at this point:
             <Quirk name="requires-allocate-on-input-ports" />
             <Quirk name="requires-allocate-on-output-ports" />
             <Quirk name="requires-loaded-to-idle-after-allocation" />
-            <Limit name="size" min="96x64" max="4096x4096" />
+            <Limit name="size" min="96x64" max="3840x2160" />
             <Limit name="alignment" value="2x2" />
             <Limit name="block-size" value="16x16" />
-            <Limit name="block-count" range="1-32768" /> <!-- max 4096x2048 -->
-            <Limit name="blocks-per-second" min="1" max="972000" />
+            <Limit name="block-count" range="1-32400" /> <!-- 3840x2160 -->
+            <Limit name="blocks-per-second" min="1" max="972000" /> <!-- 3840x2160@30 -->
             <Limit name="bitrate" range="1-100000000" />
             <Limit name="concurrent-instances" max="13" />
         </MediaCodec>
@@ -120,11 +126,11 @@ Only the three quirks included above are recognized at this point:
             <Quirk name="requires-allocate-on-input-ports" />
             <Quirk name="requires-allocate-on-output-ports" />
             <Quirk name="requires-loaded-to-idle-after-allocation" />
-            <Limit name="size" min="96x64" max="3840x3840" />
+            <Limit name="size" min="96x64" max="3840x2160" />
             <Limit name="alignment" value="2x2" />
             <Limit name="block-size" value="16x16" />
-            <Limit name="block-count" range="1-32400" /> <!-- max 3840x2160 -->
-            <Limit name="blocks-per-second" min="1" max="777600" />
+            <Limit name="block-count" range="1-32400" /> <!-- 3840x2160 -->
+            <Limit name="blocks-per-second" min="1" max="972000" /> <!-- 3840x2160@30 -->
             <Limit name="bitrate" range="1-20000000" />
             <Limit name="concurrent-instances" max="13" />
         </MediaCodec>
@@ -134,11 +140,11 @@ Only the three quirks included above are recognized at this point:
             <Quirk name="requires-allocate-on-input-ports" />
             <Quirk name="requires-allocate-on-output-ports" />
             <Quirk name="defers-output-buffer-allocation" />
-            <Limit name="size" min="64x64" max="4096x4096" />
+            <Limit name="size" min="64x64" max="3840x2160" />
             <Limit name="alignment" value="2x2" />
             <Limit name="block-size" value="16x16" />
-            <Limit name="block-count" range="1-32768" /> <!-- max 4096x2048 -->
-            <Limit name="blocks-per-second" min="1" max="972000" />
+            <Limit name="block-count" range="1-32400" /> <!-- 3840x2160 -->
+            <Limit name="blocks-per-second" min="1" max="972000" /> <!-- 3840x2160@30 -->
             <Limit name="bitrate" range="1-100000000" />
             <Feature name="adaptive-playback" />
             <Limit name="concurrent-instances" max="13" />
@@ -182,11 +188,11 @@ Only the three quirks included above are recognized at this point:
             <Quirk name="requires-allocate-on-input-ports" />
             <Quirk name="requires-allocate-on-output-ports" />
             <Quirk name="defers-output-buffer-allocation" />
-            <Limit name="size" min="96x64" max="3840x3840" />
+            <Limit name="size" min="96x64" max="3840x2160" />
             <Limit name="alignment" value="2x2" />
             <Limit name="block-size" value="16x16" />
-            <Limit name="block-count" range="1-32400" /> <!-- max 3840x2160 -->
-            <Limit name="blocks-per-second" min="1" max="777600" />
+            <Limit name="block-count" range="1-32400" /> <!-- 3840x2160 -->
+            <Limit name="blocks-per-second" min="1" max="972000" /> <!-- 3840x2160@30 -->
             <Limit name="bitrate" range="1-20000000" />
             <Feature name="adaptive-playback" />
             <Limit name="concurrent-instances" max="12" />
@@ -194,11 +200,12 @@ Only the three quirks included above are recognized at this point:
         <MediaCodec name="OMX.qcom.video.decoder.hevc" type="video/hevc" >
             <Quirk name="requires-allocate-on-input-ports" />
             <Quirk name="requires-allocate-on-output-ports" />
-            <Limit name="size" min="64x64" max="4096x4096" />
+            <Quirk name="defers-output-buffer-allocation" />
+            <Limit name="size" min="64x64" max="3840x2160" />
             <Limit name="alignment" value="2x2" />
             <Limit name="block-size" value="16x16" />
-            <Limit name="block-count" range="1-34560" /> <!-- max 4096x2160 -->
-            <Limit name="blocks-per-second" min="1" max="972000" />
+            <Limit name="block-count" range="1-32400" /> <!-- 3840x2160 -->
+            <Limit name="blocks-per-second" min="1" max="972000" /> <!-- 3840x2160@30 -->
             <Limit name="bitrate" range="1-100000000" />
             <Feature name="adaptive-playback" />
             <Limit name="concurrent-instances" max="12" />
@@ -206,6 +213,7 @@ Only the three quirks included above are recognized at this point:
         <MediaCodec name="OMX.qcom.video.decoder.hevc.secure" type="video/hevc" >
             <Quirk name="requires-allocate-on-input-ports" />
             <Quirk name="requires-allocate-on-output-ports" />
+            <Quirk name="defers-output-buffer-allocation" />
             <Limit name="size" min="64x64" max="2048x2048" />
             <Limit name="alignment" value="2x2" />
             <Limit name="block-size" value="16x16" />

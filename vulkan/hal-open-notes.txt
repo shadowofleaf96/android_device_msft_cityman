@@ -1,0 +1,102 @@
+cityman Vulkan HAL load path (Android 11 / LOS 18.1)
+=====================================================
+
+Did not add hw_open_probe.c. vulkan/vk_probe.c already dlopen()s the ICD,
+dlsym()s HMI, and calls methods->open(HWVULKAN_DEVICE_0). That is a
+default-namespace absolute-path open, not LoadDriver; see below.
+
+LoadDriver (libvulkan) — this is the path that actually works
+-------------------------------------------------------------
+
+frameworks/native/vulkan/libvulkan/driver.cpp LoadBuiltinDriver() calls
+LoadDriver(nullptr). It does not call hw_get_module().
+
+Keys (first non-empty wins):
+
+  ro.hardware.vulkan     (cityman: msm8994)
+  ro.board.platform      (cityman: msm8994)
+
+Exact name passed to android_load_sphal_library (no directory):
+
+  "vulkan.msm8994.so"
+
+Flags: RTLD_LOCAL | RTLD_NOW.
+
+Then dlsym("HMI"), require hmi->id == "vulkan", then
+module->common.methods->open(..., "vk0", ...).
+
+android_load_sphal_library (system/core/libvndksupport/linker.cpp)
+-----------------------------------------------------------------
+
+Tries exported namespaces in order: "sphal", then "default".
+On miss, falls back to dlopen() in the caller's namespace.
+
+cityman linkerconfig is LEGACY
+------------------------------
+
+out/.../system/build.prop has ro.treble.enabled=false.
+
+system/linkerconfig/modules/environment.cc IsLegacyDevice() is true when
+treble is false. main.cc then CreateLegacyConfiguration().
+
+Legacy section (contents/section/legacy.cc) has only the "default"
+namespace. There is no "sphal" namespace on cityman.
+
+So android_load_sphal_library("vulkan.msm8992.so") uses default.
+
+Legacy default namespace (contents/namespace/systemdefault.cc,
+IsDefaultConfig() == false):
+
+  isolated = false
+  search.paths include:
+    /system/${LIB}
+    /system_ext/${LIB}
+    /product/${LIB}
+    /vendor/${LIB}          ← /vendor/lib64
+    /odm/${LIB}
+  search.paths do NOT include /vendor/${LIB}/hw
+
+Basename lookup is not recursive (bionic/linker/linker.cpp open_library
++ open_library_on_paths). "vulkan.msm8992.so" is NOT found in
+/vendor/lib64/hw.
+
+Working file for LoadDriver on cityman:
+
+  /vendor/lib64/vulkan.msm8992.so
+
+cityman-vulkan.mk already copies the vendor blob there (do not edit that
+mk). The existing /vendor/lib64/hw/vulkan.msm8992.so is invisible to
+LoadDriver's basename search on this device.
+
+If Treble were enabled, A11 system/linkerconfig/contents/namespace/sphal.cc
+would add /vendor/${LIB}/hw to sphal search.paths and the /hw copy would
+also resolve. That is not cityman today.
+
+device/msft/cityman/configs/ld.config.txt
+-----------------------------------------
+
+This is the swcodec APEX overlay only
+(device.mk → /system/etc/swcodec/ld.config.txt). It is not the
+system/app linkerconfig that libvulkan uses.
+
+Its sphal.search.paths are /odm/${LIB} and /vendor/${LIB} only.
+/vendor/${LIB}/hw is permitted (absolute-path loads), not search
+(basename loads). Same conclusion: basename cannot see /hw.
+
+hardware.c (not used by libvulkan)
+----------------------------------
+
+hw_get_module("vulkan") builds a full path via access():
+
+  /odm/lib64/hw/vulkan.<variant>.so
+  /vendor/lib64/hw/vulkan.<variant>.so
+  /system/lib64/hw/vulkan.<variant>.so
+
+then android_load_sphal_library("/vendor/lib64/hw/vulkan.msm8992.so").
+
+On cityman (default ns isolated=false) that absolute path would succeed.
+libvulkan never takes this path.
+
+vk_probe.c dlopen("/vendor/lib64/hw/vulkan.msm8992.so") is the hardware.c
+style open, not LoadDriver. It can succeed while Snap/libvulkan still
+returns -ENOENT until the /vendor/lib64/ copy is installed.

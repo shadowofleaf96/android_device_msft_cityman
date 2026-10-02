@@ -1,0 +1,87 @@
+cityman VINTF Vulkan — applied after live gate.
+
+cityman-vk-probe and cityman-vk-tri both printed n=1
+(Adreno (TM) 418, api 1.0.49). vkjson after same_process_hal_file
+relabel also reports devices: 1. Never sim; still Vulkan 1.0 only.
+Do not add vulkan 1.1 or 1.4 HAL or feature XML now or later unless
+the enumerated VkPhysicalDevice.apiVersion actually reports that
+version. Adreno 418 is Vulkan 1.0; 1.4 is not this GPU.
+
+
+Current (honest, already shipped — do not change)
+
+device.mk PRODUCT_COPY_FILES (permissions, not VINTF):
+
+  frameworks/native/data/etc/android.hardware.vulkan.level-0.xml
+    -> $(TARGET_COPY_OUT_SYSTEM)/etc/permissions/android.hardware.vulkan.level.xml
+    feature android.hardware.vulkan.level version=0
+
+  frameworks/native/data/etc/android.hardware.vulkan.version-1_0_3.xml
+    -> $(TARGET_COPY_OUT_SYSTEM)/etc/permissions/android.hardware.vulkan.version.xml
+    feature android.hardware.vulkan.version version=4194307 (0x00400003)
+
+Live VINTF makefile (BoardConfig.mk) today:
+
+  DEVICE_MANIFEST_FILE := $(DEVICE_PATH)/manifest.xml
+  DEVICE_MANIFEST_FILE += $(DEVICE_PATH)/vintf/android.hardware.camera.provider@2.4.xml
+
+vendor/etc/vintf/manifest.xml (adb + assembled out) has graphics
+allocator/composer/mapper and no vulkan HAL. That is correct until
+the gate passes.
+
+There is no android.hardware.vulkan HIDL/AIDL package in this tree.
+Do not invent one. Health/power/vibrator ship their own
+vintf_fragments — do not duplicate that pattern for vulkan.
+
+
+Gate
+
+  cityman-vk-probe (vulkan/vk_probe.c) must print deviceCount>=1
+  (EnumeratePhysicalDevices count-query / fill n>=1).
+  cityman_vulkan_device_count() in VkCap.c is the same check.
+
+  deviceCount==0: leave VINTF as-is. Do not add the fragment.
+
+
+After the gate — exact files to add (device tree only)
+
+1) New fragment (same assemble_vintf wrapper as
+   vintf/android.hardware.camera.provider@2.4.xml):
+
+   path: device/msft/cityman/vintf/vulkan.xml
+
+   <manifest version="1.0" type="device">
+       <hal format="native">
+           <name>vulkan</name>
+           <version>1.0</version>
+       </hal>
+   </manifest>
+
+   Native HAL, name vulkan (hwvulkan module id). Version is
+   MAJOR.MINOR only — libvintf parse() rejects three tokens, so
+   1.0.3 is illegal here. 1.0.3 stays on the feature XML above.
+   No <interface>, no <transport> (same shape as AOSP EGL/GLES
+   native HALs). Do not use format="hidl" or name
+   android.hardware.vulkan.
+
+2) Wire it in the live VINTF makefile (BoardConfig.mk, one line):
+
+   DEVICE_MANIFEST_FILE += $(DEVICE_PATH)/vintf/vulkan.xml
+
+   assemble_vintf then puts the native vulkan 1.0 HAL into
+   /vendor/etc/vintf/manifest.xml.
+
+3) Features: no new PRODUCT_COPY_FILES. Keep level-0 and
+   version-1_0_3 only.
+
+
+Do not add (even after the gate, unless newly measured)
+
+  android.hardware.vulkan.version-1_1.xml
+  android.hardware.vulkan.version-1_4.xml   (not in this LOS 18.1 tree)
+  android.hardware.vulkan.compute-0.xml
+  android.software.vulkan.deqp.level*       (claims CTS; no dEQP log)
+  <version>1.1</version> or 1.4 on the native HAL
+  ro.hwui.use_vulkan                        (see vulkan/HWUI.txt)
+  anything in compatibility_matrix.xml      (DEVICE_MATRIX is FCM
+                                            requirements, not vendor HALs)

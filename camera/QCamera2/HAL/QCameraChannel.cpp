@@ -33,7 +33,6 @@
 #include "QCameraParameters.h"
 #include "QCamera2HWI.h"
 #include "QCameraChannel.h"
-#include <media/hardware/HardwareAPI.h>
 
 using namespace android;
 
@@ -805,17 +804,6 @@ int32_t QCameraVideoChannel::releaseFrame(const void * opaque, bool isMetaData)
     }
 
     int32_t rc = pVideoStream->bufDone(opaque, isMetaData);
-
-    const VideoNativeHandleMetadata *packet =
-            static_cast<const VideoNativeHandleMetadata *> (opaque);
-    if (kMetadataBufferTypeNativeHandleSource == packet->eType) {
-        native_handle_close(packet->pHandle);
-        native_handle_delete(packet->pHandle);
-    } else {
-        ALOGE("%s Received unexpected video buffer type: %d",
-                __func__, packet->eType);
-    }
-
     return rc;
 }
 
@@ -1075,9 +1063,15 @@ int32_t QCameraReprocessChannel::addReprocStreamsFromSource(
             pMiscBuf = allocator.allocateMiscBuf(streamInfo);
 
             // add reprocess stream
-            rc = addStream(allocator, pStreamInfoBuf, pMiscBuf,
-                    minStreamBufNum, &padding, NULL, NULL, false, false,
-                    streamInfo->reprocess_config.pp_feature_config.rotation);
+            if (streamInfo->reprocess_config.pp_feature_config.feature_mask
+                    & CAM_QCOM_FEATURE_ROTATION) {
+                rc = addStream(allocator, pStreamInfoBuf, pMiscBuf,
+                        minStreamBufNum, &padding, NULL, NULL, false, false,
+                        streamInfo->reprocess_config.pp_feature_config.rotation);
+            } else {
+                rc = addStream(allocator, pStreamInfoBuf, pMiscBuf,
+                        minStreamBufNum, &padding, NULL, NULL, false, false);
+            }
             if (rc != NO_ERROR) {
                 ALOGE("%s: add reprocess stream failed, ret = %d", __func__, rc);
                 break;

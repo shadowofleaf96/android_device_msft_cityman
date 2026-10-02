@@ -1,0 +1,35 @@
+on boot
+    chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+    chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+    chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+    chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+    chown system system /sys/module/cpu_boost/parameters/input_boost_freq
+    chown system system /sys/module/cpu_boost/parameters/input_boost_ms
+    chmod 0664 /sys/module/cpu_boost/parameters/input_boost_freq
+    chmod 0664 /sys/module/cpu_boost/parameters/input_boost_ms
+    chown system system /sys/module/msm_performance/parameters/cpu_max_freq
+    chmod 0664 /sys/module/msm_performance/parameters/cpu_max_freq
+    chown system system /sys/class/kgsl/kgsl-3d0/max_pwrlevel
+    chown system system /sys/class/kgsl/kgsl-3d0/min_pwrlevel
+    chown system system /sys/class/kgsl/kgsl-3d0/default_pwrlevel
+    chmod 0664 /sys/class/kgsl/kgsl-3d0/max_pwrlevel
+    chmod 0664 /sys/class/kgsl/kgsl-3d0/min_pwrlevel
+    chmod 0664 /sys/class/kgsl/kgsl-3d0/default_pwrlevel
+    chmod 0444 /sys/kernel/debug/rpm_stats
+    chmod 0444 /sys/kernel/debug/rpm_master_stats
+
+on property:sys.boot_completed=1
+    chown system system /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq
+    chown system system /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq
+    chmod 0664 /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq
+    chmod 0664 /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq
+    chown system system /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq
+    chown system system /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq
+    chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq
+    chmod 0664 /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq
+
+service vendor.power-1-0 /vendor/bin/hw/android.hardware.power@1.0-service.cityman
+    interface android.hardware.power@1.0::IPower default
+    class hal
+    user system
+    group system

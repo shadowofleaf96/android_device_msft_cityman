@@ -1,0 +1,10 @@
+cityman SPHAL ICD path (9523fa36 live vendor; no reboot).
+Live /vendor/lib{,64}/vulkan.msm8992.so was a vendor_file symlink to hw/.
+libvulkan LoadDriver looks up vulkan.msm8992.so, not hw/vulkan.msm8992.so.
+Live fix: rm symlink, cp -f hw ICD to that basename, then
+chcon u:object_r:same_process_hal_file:s0 on both ABIs plus
+libgsl, libadreno_utils, libllvm-qgl. Kill gpuservice only; init restarts it.
+cityman-vulkan.mk already PRODUCT_COPY_FILES the proprietary hw .so
+to /vendor/lib{,64}/vulkan.msm8992.so as a real file (not a symlink).
+The next vendor image ships that copy. Do not add another symlink.
+Do not set ro.hwui.use_vulkan. Feature XML stays vulkan.version-1_0_3.

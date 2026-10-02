@@ -1,0 +1,81 @@
+// cityman on-device Vulkan HAL / loader probe (system binary).
+// Installed via cityman-vulkan.mk PRODUCT_PACKAGES; do not add it here.
+// VkCap.c / VkCap.h are optional; cityman-vk-probe stays on vk_probe.c only.
+
+cc_binary {
+    name: "cityman-vk-probe",
+    srcs: ["vk_probe.c"],
+    vendor: false,
+    proprietary: false,
+    compile_multilib: "64",
+
+    shared_libs: [
+        "liblog",
+        "libdl",
+        "libhardware",
+        "libvulkan",
+    ],
+
+    header_libs: [
+        "hwvulkan_headers",
+        "vulkan_headers",
+    ],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-DLOG_TAG=\"citymanVk\"",
+    ],
+}
+
+// Optional helper; not linked into cityman-vk-probe.
+cc_library_static {
+    name: "libcityman-vkcap",
+    srcs: ["VkCap.c"],
+    vendor: false,
+    proprietary: false,
+    compile_multilib: "64",
+
+    shared_libs: [
+        "libdl",
+        "libvulkan",
+    ],
+
+    header_libs: [
+        "vulkan_headers",
+    ],
+
+    export_include_dirs: ["."],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+    ],
+}
+
+// Optional on-device printer for libcityman-vkcap; not linked into cityman-vk-probe.
+cc_binary {
+    name: "cityman-vk-cap",
+    srcs: ["vk_cap_main.c"],
+    vendor: false,
+    proprietary: false,
+    compile_multilib: "64",
+
+    static_libs: [
+        "libcityman-vkcap",
+    ],
+
+    shared_libs: [
+        "libdl",
+        "libvulkan",
+    ],
+
+    header_libs: [
+        "vulkan_headers",
+    ],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+    ],
+}

@@ -1,0 +1,25 @@
+// cityman Vulkan 1.0 blit proof: clear src red, vkCmdBlitImage, host copy of dst.
+// Command-line native. Not in PRODUCT_PACKAGES. Does not enable HWUI Vulkan.
+
+cc_binary {
+    name: "cityman-vk-blit",
+    srcs: ["main.c"],
+    vendor: false,
+    proprietary: false,
+    compile_multilib: "64",
+
+    shared_libs: [
+        "liblog",
+        "libvulkan",
+    ],
+
+    header_libs: [
+        "vulkan_headers",
+    ],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-DLOG_TAG=\"citymanVkBlit\"",
+    ],
+}

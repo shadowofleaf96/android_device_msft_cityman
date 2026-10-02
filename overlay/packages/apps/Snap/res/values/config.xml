@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Cityman Snap overlay. CameraId 0 is mot_imx230 (MSM8994 HAL1 / openLegacy).
+-->
+<resources>
+    <!-- QCamera2 HAL1. CameraId 0 mot_imx230. Not Camera API2. -->
+    <bool name="support_camera_api_v2">false</bool>
+    <bool name="back_camera_open_legacy">true</bool>
+</resources>

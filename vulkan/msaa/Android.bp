@@ -1,0 +1,27 @@
+// cityman Vulkan 1.0 MSAA sample-count probe (system binary).
+// Queries R8G8B8A8 color sampleCounts. 4x path is real resolve, not a fake.
+// Not in PRODUCT_PACKAGES. Do not add this to cityman-vulkan.mk.
+// Do not set ro.hwui.use_vulkan.
+
+cc_binary {
+    name: "cityman-vk-msaa",
+    srcs: ["main.c"],
+    vendor: false,
+    proprietary: false,
+    compile_multilib: "64",
+
+    shared_libs: [
+        "liblog",
+        "libvulkan",
+    ],
+
+    header_libs: [
+        "vulkan_headers",
+    ],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-DLOG_TAG=\"citymanVkMsaa\"",
+    ],
+}

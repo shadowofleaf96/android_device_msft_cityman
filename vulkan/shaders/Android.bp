@@ -1,0 +1,10 @@
+// cityman Vulkan 1.0 triangle SPIR-V headers (pregenerated .spv.h).
+// Consumers: header_libs: ["cityman-vk-shaders"] then
+//   #include "cityman_tri.vert.spv.h" / "cityman_tri.frag.spv.h"
+// Do not regenerate SPIR-V unless those headers are missing.
+// Not a PRODUCT_PACKAGES module. HWUI stays GLES.
+
+cc_library_headers {
+    name: "cityman-vk-shaders",
+    export_include_dirs: ["."],
+}

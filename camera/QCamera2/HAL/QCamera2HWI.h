@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2015, The Linux Foundataion. All rights reserved.
+/* Copyright (c) 2012-2016, The Linux Foundataion. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -31,6 +31,7 @@
 #define __QCAMERA2HARDWAREINTERFACE_H__
 
 #include <hardware/camera.h>
+#include <hardware/power.h>
 #include <utils/Log.h>
 #include <utils/Mutex.h>
 #include <utils/Condition.h>
@@ -45,7 +46,6 @@
 #include "QCameraPostProc.h"
 #include "QCameraThermalAdapter.h"
 #include "QCameraMem.h"
-#include "QCameraPerf.h"
 
 extern "C" {
 #include <mm_camera_interface.h>
@@ -182,6 +182,9 @@ public:
     static bool matchSnapshotNotifications(void *data, void *user_data);
     static bool matchPreviewNotifications(void *data, void *user_data);
     virtual int32_t flushPreviewNotifications();
+    static bool matchTimestampNotifications(void *data, void *user_data);
+    virtual int32_t flushVideoNotifications();
+
 private:
 
     camera_notify_callback         mNotifyCb;
@@ -194,6 +197,22 @@ private:
     QCameraCmdThread mProcTh;
     bool             mActive;
 };
+
+class QCameraPerfLock {
+public:
+    void    lock_init();
+    void    lock_deinit();
+    int32_t lock_rel();
+    int32_t lock_acq();
+private:
+    int32_t        (*perf_lock_acq)(int, int, int[], int);
+    int32_t        (*perf_lock_rel)(int);
+    void           *dlhandle;
+    uint32_t        mPerfLockEnable;
+    pthread_mutex_t dl_mutex;
+    int32_t         mPerfLockHandle;  // Performance lock library handle
+};
+
 class QCamera2HardwareInterface : public QCameraAllocator,
         public QCameraThermalCallback, public QCameraAdjustFPS
 {
@@ -247,7 +266,6 @@ public:
 
     static int getCapabilities(uint32_t cameraId, struct camera_info *info);
     static int initCapabilities(uint32_t cameraId, mm_camera_vtbl_t *cameraHandle);
-    cam_capability_t *getCamHalCapabilities();
 
     // Implementation of QCameraAllocator
     virtual QCameraMemory *allocateStreamBuf(cam_stream_type_t stream_type,
@@ -443,6 +461,15 @@ private:
     void captureDone();
     int32_t updateMetadata(metadata_buffer_t *pMetaData);
 
+    // cityman: photo flash on the GPIO LED led:flash_torch (mm-camera has no
+    // flash driver). The LED goes on before the capture frame, the AEC is
+    // given time to converge on the lit scene, and the LED goes off when the
+    // capture frame has been received. Torch mode is untouched by these.
+    int32_t ledStrobeStart();
+    void ledStrobeStop();
+    void ledStrobeFrameReceived();
+    void ledStrobeAecUpdate(uint32_t frame_idx, const cam_3a_params_t &ae);
+
     int32_t getPPConfig(cam_pp_feature_config_t &pp_config, int curCount);
     static void camEvtHandle(uint32_t camera_handle,
                           mm_camera_event_t *evt,
@@ -545,7 +572,8 @@ private:
     bool bRetroPicture;
     // Signifies AEC locked during zsl snapshots
     bool m_bLedAfAecLock;
-    cam_autofocus_state_t m_currentFocusState;
+
+    power_module_t *m_pPowerModule;   // power module
 
     uint32_t mDumpFrmCnt;  // frame dump count
     uint32_t mDumpSkipCnt; // frame skip count
@@ -560,6 +588,28 @@ private:
     pthread_t mLiveSnapshotThread;
     pthread_t mIntPicThread;
     bool mFlashNeeded;
+
+    // led:flash_torch software strobe state. m_ledStrobeLock guards it: the
+    // metadata callback thread feeds AEC samples while take_picture() waits
+    // on m_ledStrobeCond for the exposure to settle.
+    typedef struct {
+        bool on;                // LED currently lit by the strobe (not torch)
+        uint8_t pending;        // capture frames still expected before LED off
+        bool valid;             // at least one AEC report seen
+        uint32_t frame_idx;     // frame id of the last AEC report
+        float exp_time;         // exposure time (s) of the last AEC report
+        int32_t iso;            // ISO of the last AEC report
+        uint32_t settled;       // AEC settled flag of the last report
+        uint32_t on_frame_idx;  // frame id when the LED was switched on
+        float on_exp_time;      // exposure the AEC had when the LED went on
+        int32_t on_iso;
+        bool reacted;           // AEC changed exposure since the LED went on
+        bool stable;            // exposure unchanged from the previous report
+    } led_strobe_t;
+    led_strobe_t mLedStrobe;
+    pthread_mutex_t m_ledStrobeLock;
+    pthread_cond_t m_ledStrobeCond;
+
     uint32_t mDeviceRotation;
     uint32_t mCaptureRotation;
     uint32_t mJpegExifRotation;
@@ -637,6 +687,9 @@ private:
     uint32_t mInputCount;
     bool mAdvancedCaptureConfigured;
     bool mHDRBracketingEnabled;
+#ifdef USE_MEDIA_EXTENSIONS
+    QCameraVideoMemory *mVideoMem;
+#endif
 };
 
 }; // namespace qcamera

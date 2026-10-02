@@ -1,0 +1,28 @@
+// 32-bit Vulkan HAL / loader probe (armeabi-v7a).
+// Do not add this to vulkan/Android.bp. HWUI stays GLES.
+
+cc_binary {
+    name: "cityman-vk-probe32",
+    srcs: ["vk_probe32.c"],
+    vendor: false,
+    proprietary: false,
+    compile_multilib: "32",
+
+    shared_libs: [
+        "liblog",
+        "libdl",
+        "libhardware",
+        "libvulkan",
+    ],
+
+    header_libs: [
+        "hwvulkan_headers",
+        "vulkan_headers",
+    ],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-DLOG_TAG=\"citymanVk32\"",
+    ],
+}

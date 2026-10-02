@@ -1,0 +1,33 @@
+// cityman Vulkan 1.0 one-shot present to a real SurfaceFlinger Surface.
+// libgui SurfaceComposerClient / SurfaceControl (Android 11 APIs).
+// Command-line native. No SystemUI hook. Does not set ro.hwui.use_vulkan.
+
+cc_binary {
+    name: "cityman-vk-sfwin",
+    srcs: ["main.cpp"],
+    vendor: false,
+    proprietary: false,
+    compile_multilib: "64",
+
+    shared_libs: [
+        "liblog",
+        "libvulkan",
+        "libgui",
+        "libui",
+        "libbinder",
+        "libutils",
+        "libcutils",
+        "libnativewindow",
+    ],
+
+    header_libs: [
+        "vulkan_headers",
+    ],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-DLOG_TAG=\"citymanVkSfwin\"",
+        "-DVK_USE_PLATFORM_ANDROID_KHR",
+    ],
+}

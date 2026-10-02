@@ -62,7 +62,8 @@
 #define HANDLE_ACCEL 7
 #define HANDLE_GYRO 8
 #define HANDLE_TEMP 9
-#define N_SENSORS 9
+#define HANDLE_ORIENTATION 10 // Ajout du handle d'orientation
+#define N_SENSORS 12
 
 #define IMU_NONE 0
 #define IMU_LSM6 1
@@ -81,7 +82,7 @@
 #define ICM_REG_BANK_SEL 0x7f
 #define ICM_BANK0 0x00
 #define ICM_BANK2 0x20
-#define ICM_WHO_TALKMAN 0xab
+#define ICM_WHO_CITYMAN 0xab
 
 #define HALL_FRONT_GPIO 42
 #define HALL_BACK_GPIO 75
@@ -276,7 +277,57 @@ static const struct sensor_t k_list[] = {
         .maxDelay = 1000000,
         .flags = SENSOR_FLAG_CONTINUOUS_MODE,
     },
-};
+    {
+        .name = "ICM-20648 Accelerometer",
+        .vendor = "InvenSense",
+        .version = 1,
+        .handle = HANDLE_ACCEL,
+        .type = SENSOR_TYPE_ACCELEROMETER,
+        .maxRange = 78.4532f,
+        .resolution = 0.002395f,
+        .power = 0.25f,
+        .minDelay = 10000,
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
+        .stringType = SENSOR_STRING_TYPE_ACCELEROMETER,
+        .requiredPermission = "",
+        .maxDelay = 200000,
+        .flags = SENSOR_FLAG_CONTINUOUS_MODE,
+    },
+    {
+        .name = "ICM-20648 Gyroscope",
+        .vendor = "InvenSense",
+        .version = 1,
+        .handle = HANDLE_GYRO,
+        .type = SENSOR_TYPE_GYROSCOPE,
+        .maxRange = 34.9065f,
+        .resolution = 0.001068f,
+        .power = 0.61f,
+        .minDelay = 10000,
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
+        .stringType = SENSOR_STRING_TYPE_GYROSCOPE,
+        .requiredPermission = "",
+        .maxDelay = 200000,
+        .flags = SENSOR_FLAG_CONTINUOUS_MODE,
+    },
+    {
+        .name = "Device Orientation Sensor",
+        .vendor = "Cityman Virtual",
+        .version = 1,
+        .handle = HANDLE_ORIENTATION,
+        .type = SENSOR_TYPE_DEVICE_ORIENTATION,
+        .maxRange = 3.0f,
+        .resolution = 1.0f,
+        .power = 0.0f,
+        .minDelay = 0,
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
+        .stringType = SENSOR_STRING_TYPE_DEVICE_ORIENTATION,
+        .requiredPermission = "",
+        .maxDelay = 0,
+        .flags = SENSOR_FLAG_ON_CHANGE_MODE,
+    }};
 
 static const struct sensor_t k_accel = {
     .name = "ICM-206xx Accelerometer",
@@ -358,7 +409,8 @@ static int g_still_n;
 static int g_cal_loaded;
 static int g_cal_dirty;
 static int64_t g_last_save_ns;
-static struct sensor_t g_list[N_SENSORS];
+static struct sensor_t
+    g_list[24]; // Déclaré comme un vrai tableau de 24 éléments
 static int g_list_n;
 
 static sensors_event_t g_q[QMAX];
@@ -1374,7 +1426,7 @@ static int imu_try_icm(float *ax, float *ay, float *az) {
   if (i2c_read_regs(g_i2c4, IMU_ADDR, ICM_REG_WHO, &who, 1) != 0)
     return 0;
   i2c_read_regs(g_i2c4, IMU_ADDR, ICM_REG_PWR_MGMT_1, &pwr1, 1);
-  if (who != ICM_WHO_TALKMAN && pwr1 != 0x41)
+  if (who != ICM_WHO_CITYMAN && pwr1 != 0x41)
     return 0;
   if (!imu_icm_wake())
     return 0;

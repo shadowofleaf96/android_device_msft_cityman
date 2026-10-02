@@ -1,0 +1,26 @@
+// 32-bit Vulkan 1.0 GPU-write proof: vkCmdClearColorImage + host copy.
+// 64x64 green. Same as vulkan/clear/ but compile_multilib 32.
+// Do not add this to vulkan/Android.bp. HWUI stays GLES.
+
+cc_binary {
+    name: "cityman-vk-clear32",
+    srcs: ["main.c"],
+    vendor: false,
+    proprietary: false,
+    compile_multilib: "32",
+
+    shared_libs: [
+        "liblog",
+        "libvulkan",
+    ],
+
+    header_libs: [
+        "vulkan_headers",
+    ],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-DLOG_TAG=\"citymanVkClear32\"",
+    ],
+}

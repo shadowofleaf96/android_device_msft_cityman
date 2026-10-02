@@ -1,0 +1,13 @@
+#version 450
+
+/* Vulkan 1.0 / SPIR-V 1.0. BufferBlock + Uniform (not StorageBuffer class). */
+layout(local_size_x = 64) in;
+
+layout(std430, binding = 0) buffer OutBuf {
+    uint words[64];
+};
+
+void main()
+{
+    words[gl_LocalInvocationIndex] = 0xA5A5A5A5u;
+}

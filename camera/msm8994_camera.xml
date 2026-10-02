@@ -1,0 +1,35 @@
+<!--
+  mm-qcamera-daemon sensor list for cityman (MSM8992).
+  CameraId 0 SensorName mot_imx230 -> libmmcamera_mot_imx230.so (clark MSM8992).
+  4-lane CSI: LaneMask 0x1F LaneAssign 0x0423 (RM-1104 CSI0 LN2/LN1/LN3/LN0).
+  MountAngle 90: HAL1 reported 0 with 360 (360 % 360). Rear phones use 90.
+  No CameraId 1: front is Nokia Ducati SMIA module 0x2140 / die 0x03BB
+  (not ov5693, not imx214, not imx230). No slave-id until a matching lib exists.
+  No ActuatorName / OisName / FlashName / EepromName: VCM is BU24210 @ 0x7c,
+  no libmmcamera_ois_bu24210, flash is GPIO torch not sky81296, NVM is Nokia DCC.
+  No slave-id in this file.
+-->
+<CameraConfigurationRoot>
+  <CameraModuleConfig>
+    <CameraId>0</CameraId>
+    <SensorName>mot_imx230</SensorName>
+    <ChromatixName>mot_imx230</ChromatixName>
+    <ModesSupported>1</ModesSupported>
+    <Position>BACK</Position>
+    <MountAngle>90</MountAngle>
+    <CSIInfo>
+      <CSIDCore>0</CSIDCore>
+      <LaneMask>0x1F</LaneMask>
+      <LaneAssign>0x0423</LaneAssign>
+      <ComboMode>0</ComboMode>
+    </CSIInfo>
+    <LensInfo>
+      <FocalLength>4.52</FocalLength>
+      <FNumber>1.9</FNumber>
+      <TotalFocusDistance>1.2</TotalFocusDistance>
+      <HorizontalViewAngle>65.0</HorizontalViewAngle>
+      <VerticalViewAngle>51.0</VerticalViewAngle>
+      <MinFocusDistance>0.1</MinFocusDistance>
+    </LensInfo>
+  </CameraModuleConfig>
+</CameraConfigurationRoot>

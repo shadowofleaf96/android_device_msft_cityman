@@ -1,0 +1,19 @@
+Do not set ro.hwui.use_vulkan on cityman until both gates pass:
+
+  1. vkEnumeratePhysicalDevices >= 1   (passed)
+  2. a triangle presents to a real ANativeWindow
+     (swapchain present works: cityman-vk-present clear at ~60 fps;
+      that is not HWUI, and the ICD is still Vulkan 1.0 / no AHB)
+
+Adreno 418 ICD enumerates 1 device on a Vulkan 1.0 instance
+(cityman-vk-tri empty submit succeeded). HWUI still stays GLES:
+Android 11 Skia Vulkan fatals below instance 1.1, and this blob
+has no AHardwareBuffer import. A 1.1 HAL CreateInstance is
+VK_ERROR_INCOMPATIBLE_DRIVER.
+
+Keep Skia/OpenGL HWUI. Leave ro.hwui.use_vulkan unset.
+Do not set it true in system.prop or vendor.prop.
+
+Device-tree check (this note):
+  ro.hwui.use_vulkan is not assigned anywhere.
+  system.prop / vendor.prop only comment that it must stay unset.

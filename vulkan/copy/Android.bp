@@ -1,0 +1,27 @@
+// cityman Vulkan 1.0 color-image copy: vkCmdCopyImageToBuffer.
+// Prints bufferRowLength vs tightly packed. Command-line native.
+// Not in PRODUCT_PACKAGES. Do not add this to cityman-vulkan.mk.
+// Does not enable HWUI Vulkan. Do not set ro.hwui.use_vulkan.
+
+cc_binary {
+    name: "cityman-vk-copy",
+    srcs: ["vk_copy.c"],
+    vendor: false,
+    proprietary: false,
+    compile_multilib: "64",
+
+    shared_libs: [
+        "liblog",
+        "libvulkan",
+    ],
+
+    header_libs: [
+        "vulkan_headers",
+    ],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-DLOG_TAG=\"citymanVkCopy\"",
+    ],
+}

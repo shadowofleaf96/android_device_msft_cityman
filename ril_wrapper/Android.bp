@@ -15,4 +15,38 @@ cc_library_shared {
         "-Wno-unused-parameter",
     ],
     compile_multilib: "64",
+    vendor: true,
 }
+
+cc_binary {
+    name: "lumia-modem-init",
+    srcs: ["lumia_modem_init.c"],
+    shared_libs: [
+        "liblog",
+        "libdl",
+    ],
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wno-unused-parameter",
+    ],
+    compile_multilib: "64",
+    vendor: true,
+}
+
+cc_binary {
+    name: "modem-diag",
+    srcs: ["modem_diag.c"],
+    shared_libs: [
+        "liblog",
+        "libdl",
+    ],
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wno-unused-parameter",
+    ],
+    compile_multilib: "64",
+    vendor: true,
+}
+

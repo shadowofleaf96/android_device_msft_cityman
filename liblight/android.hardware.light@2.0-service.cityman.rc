@@ -1,0 +1,26 @@
+on post-fs-data
+    chown system system /sys/class/leds/lcd-backlight/brightness
+    chmod 0660 /sys/class/leds/lcd-backlight/brightness
+    chown system system /sys/class/leds/red/brightness
+    chown system system /sys/class/leds/green/brightness
+    chown system system /sys/class/leds/blue/brightness
+    chmod 0660 /sys/class/leds/red/brightness
+    chmod 0660 /sys/class/leds/green/brightness
+    chmod 0660 /sys/class/leds/blue/brightness
+    chown system system /sys/class/leds/red/trigger
+    chown system system /sys/class/leds/green/trigger
+    chown system system /sys/class/leds/blue/trigger
+    chmod 0660 /sys/class/leds/red/trigger
+    chmod 0660 /sys/class/leds/green/trigger
+    chmod 0660 /sys/class/leds/blue/trigger
+    chown system camera /sys/class/leds/led:flash_torch/brightness
+    chown system camera /sys/class/leds/led:torch_0/brightness
+    chmod 0660 /sys/class/leds/led:flash_torch/brightness
+    chmod 0660 /sys/class/leds/led:torch_0/brightness
+
+service vendor.light-hal-2-0 /vendor/bin/hw/android.hardware.light@2.0-service.cityman
+    interface android.hardware.light@2.0::ILight default
+    class hal
+    user system
+    group system
+    shutdown critical

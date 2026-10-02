@@ -1,0 +1,27 @@
+// cityman Vulkan 1.0 occlusion / timestamp query probe (system binary).
+// Build with: m cityman-vk-query
+// Not in PRODUCT_PACKAGES. Do not add this to cityman-vulkan.mk.
+// Do not set ro.hwui.use_vulkan.
+
+cc_binary {
+    name: "cityman-vk-query",
+    srcs: ["vk_query.c"],
+    vendor: false,
+    proprietary: false,
+    compile_multilib: "64",
+
+    shared_libs: [
+        "liblog",
+        "libvulkan",
+    ],
+
+    header_libs: [
+        "vulkan_headers",
+    ],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-DLOG_TAG=\"citymanVkQuery\"",
+    ],
+}

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.cityman.vkpresent">
+
+    <!-- Optional: still install and log if the feature XML is missing. Not 1.1/1.4. -->
+    <uses-feature
+        android:name="android.hardware.vulkan.level"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.vulkan.version"
+        android:required="false" />
+
+    <application
+        android:label="cityman-vk-present"
+        android:allowBackup="false"
+        android:hasCode="true"
+        android:extractNativeLibs="false">
+        <activity
+            android:name=".PresentActivity"
+            android:label="cityman-vk-present"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboardHidden|orientation|screenSize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

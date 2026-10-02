@@ -87,11 +87,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/ld.config.txt:$(TARGET_COPY_OUT_SYSTEM)/etc/swcodec/ld.config.txt
 
-# FM
-PRODUCT_PACKAGES += \
-     FM2 \
-     libqcomfm_jni \
-     qcom.fmradio
 
 PRODUCT_PACKAGES += \
     qmihal
@@ -160,17 +155,19 @@ PRODUCT_PACKAGES += \
 
 # Camera
 PRODUCT_PACKAGES += \
+    camera.msm8994 \
+    libmmcamera_interface \
+    libmmjpeg_interface \
+    libqomx_core \
     android.hardware.camera.provider@2.4-impl \
     camera.device@1.0-impl \
     camera.device@3.2-impl \
     Snap \
-    camera.msm8994 \
-    libcamera \
-    libmmcamera_interface \
-    libmmcamera_interface2 \
-    libmmjpeg_interface \
-    libqomx_core \
-    mm-qcamera-app
+    msm8994_camera.xml \
+    mot_imx230_chromatix.xml \
+    msm8994_camera.xml.system \
+    mot_imx230_chromatix.xml.system
+
 
 PRODUCT_PACKAGES += \
     vendor.qti.hardware.camera.device@1.0 \
@@ -238,7 +235,7 @@ PRODUCT_COPY_FILES += \
 
 # Health
 PRODUCT_PACKAGES += \
-    android.hardware.health@2.1-impl \
+    android.hardware.health@2.1-impl-cityman \
     android.hardware.health@2.1-service
 
 # HIDL
@@ -258,6 +255,8 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     init.cityman.rc \
     init.cityman.usb.rc \
+    init.cityman.sensors.rc \
+    init.cityman.camera.rc \
     fstab.cityman \
     ueventd.cityman.rc \
     init.recovery.cityman.rc \
@@ -270,7 +269,6 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/rootdir/etc/init.qcom.devstart.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.devstart.sh \
     $(LOCAL_PATH)/rootdir/etc/fstab.cityman:$(TARGET_COPY_OUT_ROOT)/fstab.cityman \
     $(LOCAL_PATH)/rootdir/etc/fstab.cityman:$(TARGET_COPY_OUT_RAMDISK)/fstab.cityman
-#    $(LOCAL_PATH)/rootdir/etc/init.msm8994.sensor.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.msm8994.sensor.sh
 
 # Keylayout
 PRODUCT_COPY_FILES += \
@@ -284,12 +282,11 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/keylayout/synaptics_rmi4_i2c.idc:$(TARGET_COPY_OUT_SYSTEM)/usr/idc/synaptics_rmi4_i2c.idc
-# Light HAL
+    
+# Light HAL — lcd-backlight + PMI8994 RGB + torch (led:flash_torch / torch_0)
 PRODUCT_PACKAGES += \
     lights.cityman \
-    lights.vts \
-    android.hardware.light@2.0-impl \
-    android.hardware.light@2.0-service
+    android.hardware.light@2.0-service.cityman
     
 # MBN
 PRODUCT_COPY_FILES += \
@@ -311,7 +308,10 @@ PRODUCT_COPY_FILES += \
     frameworks/av/media/libstagefright/data/media_codecs_google_video.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/media_codecs_google_video.xml \
     $(LOCAL_PATH)/configs/media_codecs.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/media_codecs.xml \
     $(LOCAL_PATH)/configs/media_codecs_performance.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/media_codecs_performance.xml \
-    $(LOCAL_PATH)/configs/media_profiles.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/media_profiles.xml
+    $(LOCAL_PATH)/configs/media_profiles.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/media_profiles.xml \
+    $(LOCAL_PATH)/configs/media_profiles.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/media_profiles_V1_0.xml \
+    $(LOCAL_PATH)/configs/media_profiles.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_profiles.xml \
+    $(LOCAL_PATH)/configs/media_profiles.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_profiles_V1_0.xml
 
 # MSM IRQ Balancer configuration file
 PRODUCT_COPY_FILES += \
@@ -338,12 +338,12 @@ DEVICE_PACKAGE_OVERLAYS := \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/privapp-permissions-cityman.xml:system/etc/permissions/privapp-permissions-cityman.xml
 
-# Power HAL
-PRODUCT_PACKAGES += \
-    android.hardware.power-service-qti
 
-# Power configuration file
+PRODUCT_PACKAGES += \
+    android.hardware.power@1.0-service.cityman
+
 PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/configs/powerhint.xml:$(TARGET_COPY_OUT_VENDOR)/etc/powerhint.xml \
     $(LOCAL_PATH)/rootdir/etc/init.cityman.power.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.cityman.power.sh
 
 # Qseecomd configuration file
@@ -368,6 +368,9 @@ PRODUCT_PACKAGES += \
     qti_telephony_hidl_wrapper.xml \
     qti-telephony-utils \
     qti_telephony_utils.xml \
+    libril_wrapper \
+    lumia-modem-init \
+    libperipheral_client \
 
 PRODUCT_BOOT_JARS += \
     telephony-ext
@@ -393,11 +396,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     thermal.cityman
 
-# CAF thermal-engine DT_NEEDs libqti-perfd-client.so. The LGE vendor.img
-# does not ship it. This open-source stub lets thermal-engine start; the
-# 8994 conf still applies policy through ioctl/sysfs. Optional msm8994
-# perfd blobs (bullhead) are documented in power/README.md — do not commit
-# those binaries here.
 PRODUCT_PACKAGES += \
     libqti-perfd-client
 
@@ -407,7 +405,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
     
 PRODUCT_PACKAGES += \
     sensors.cityman \
-    android.hardware.sensors@1.0-impl
+    android.hardware.sensors@1.0-impl \
+    android.hardware.sensors@1.0-service
 
 # VNDK
 PRODUCT_EXTRA_VNDK_VERSIONS := 29
@@ -432,9 +431,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     ro.oem_unlock_supported=1
 
-# Vibrator HAL
+# Vibrator HAL — qpnp-haptic timed_output (/sys/class/timed_output/vibrator/enable)
 PRODUCT_PACKAGES += \
-    android.hardware.vibrator@1.0-impl
+    vibrator.cityman     \
+    android.hardware.vibrator@1.0-service.cityman
 
 # Wi-Fi
 PRODUCT_PACKAGES += \
@@ -463,6 +463,9 @@ PRODUCT_SYSTEM_VERITY_PARTITION := /dev/block/platform/soc.0/f9824900.sdhci/by-n
 $(call inherit-product, build/target/product/verity.mk)
 endif
 
+PRODUCT_COPY_FILES += \
+    vendor/msft/cityman/proprietary/vendor/lib/libmmcamera_mot_imx230.so:$(TARGET_COPY_OUT_VENDOR)/lib/libmmcamera_imx230.so
+
 $(call inherit-product-if-exists, hardware/qcom/msm8994/msm8994.mk)
 $(call inherit-product-if-exists, vendor/qcom/gpu/msm8994/msm8994-gpu-vendor.mk)
 
@@ -476,3 +479,14 @@ PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
     sys.usb.configfs=0 \
     sys.usb.config=adb \
     persist.sys.usb.config=adb
+    
+$(call inherit-product-if-exists, device/msft/cityman/cityman-vulkan.mk)
+ifneq ($(wildcard vendor/msft/cityman/cityman-dsp.mk),)
+$(call inherit-product, vendor/msft/cityman/cityman-dsp.mk)
+endif
+ifneq ($(wildcard vendor/msft/cityman/cityman-ois.mk),)
+$(call inherit-product, vendor/msft/cityman/cityman-ois.mk)
+endif
+ifneq ($(wildcard vendor/msft/cityman/cityman-camera-xml.mk),)
+$(call inherit-product, vendor/msft/cityman/cityman-camera-xml.mk)
+endif

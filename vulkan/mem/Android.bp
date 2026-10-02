@@ -1,0 +1,26 @@
+// cityman Vulkan memory-type dump (system binary).
+// Not in PRODUCT_PACKAGES. Build: mka cityman-vk-mem
+// Do not add this to cityman-vulkan.mk (other agent).
+
+cc_binary {
+    name: "cityman-vk-mem",
+    srcs: ["vk_mem.c"],
+    vendor: false,
+    proprietary: false,
+    compile_multilib: "64",
+
+    shared_libs: [
+        "liblog",
+        "libvulkan",
+    ],
+
+    header_libs: [
+        "vulkan_headers",
+    ],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-DLOG_TAG=\"citymanVkMem\"",
+    ],
+}

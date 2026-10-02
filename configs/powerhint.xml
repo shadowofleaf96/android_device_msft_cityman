@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cityman MSM8992 (4x Cortex-A53 + 2x Cortex-A57).
+
+  OPP tables: kernel msm8992.dtsi
+    qcom,cpufreq-table-0 (LITTLE / cpu0)
+    qcom,cpufreq-table-4 (big / cpu4)
+    qcom,a57-speedbin0-v0 tops at 1824000000 Hz
+    qcom,vdd-apps-rstr levels 768000 / 1248000 / 1824000
+
+  A57 ceiling is 1824000 kHz. Do not add 1960000 (WOA PEP overclock).
+  GPU pwrlevels: msm8992-gpu.dtsi (0=600MHz .. 5=180MHz, 6=27MHz).
+  Input boost matches init.cityman.power.sh: kernel cpu-boost
+  input_boost_freq "0:960000 4:1248000 5:1248000", input_boost_ms 1500,
+  sched_boost_on_input=Y (HMP moves UI threads onto the A57s for the window).
+  Measured during a Settings fling (scrolltest2.sh, framestats last 120
+  frames): with the bullhead 40 ms LITTLE-only boost cpu4 sat at 384 MHz 82%
+  of the time, dequeueBuffer stalled 10 ms at p90 and 16-46 frames were over
+  16.7 ms; with the 1.5 s A57 1248000 boost + sched boost dequeue p90 is
+  0.35 ms and 0 frames were over budget in two runs. 1824000 measured the
+  same as 1248000, so the lower A57 floor is used. Without sched boost 8
+  frames were over budget. Screen off (INTERACTIVE_OFF) falls back to the
+  40 ms LITTLE-only boost.
+
+  GPU: the panel is 1440x2560 (WQHD). Measured with dumpsys gfxinfo on
+  Settings scrolling: at pwrlevel 5 (180 MHz) the Adreno 418 needs 12-14 ms
+  per UI frame (p50 12 ms) and msm-adreno-tz (TZ DCVS) holds it there at
+  ~60% busy. A 300 MHz floor (pwrlevel 4) drops GPU time to 7-9 ms in every
+  run (janky-frame counts are noisier: 8-19% -> 4-14%). Apply that floor
+  only while the user is touching
+  (INTERACTION / LAUNCH) and wake the GPU at 300 MHz (default_pwrlevel=4,
+  same as qcom,initial-pwrlevel in the DT); idle still decays to 180 MHz.
+-->
+<HintConfigs platform="msm8992">
+  <Opp cluster="little" policy_cpu="0">
+    <Freq khz="384000"/>
+    <Freq khz="460800"/>
+    <Freq khz="600000"/>
+    <Freq khz="672000"/>
+    <Freq khz="787200"/>
+    <Freq khz="864000"/>
+    <Freq khz="960000"/>
+    <Freq khz="1248000"/>
+    <Freq khz="1440000"/>
+  </Opp>
+  <Opp cluster="big" policy_cpu="4">
+    <Freq khz="384000"/>
+    <Freq khz="480000"/>
+    <Freq khz="633600"/>
+    <Freq khz="768000"/>
+    <Freq khz="864000"/>
+    <Freq khz="960000"/>
+    <Freq khz="1248000"/>
+    <Freq khz="1344000"/>
+    <Freq khz="1440000"/>
+    <Freq khz="1536000"/>
+    <Freq khz="1632000"/>
+    <Freq khz="1689600"/>
+    <Freq khz="1824000"/>
+  </Opp>
+
+  <Defaults>
+    <Little min_khz="384000" hispeed_khz="960000"/>
+    <Big min_khz="384000" hispeed_khz="1248000" max_khz="1824000"/>
+    <Gpu min_pwrlevel="5" max_pwrlevel="0" default_pwrlevel="4"/>
+    <InputBoost freq="0:960000 4:1248000 5:1248000" ms="1500"/>
+  </Defaults>
+
+  <Hint name="INTERACTION" duration_ms="1500">
+    <Little min_khz="960000"/>
+    <Big min_khz="1248000"/>
+    <Gpu min_pwrlevel="4"/>
+  </Hint>
+
+  <Hint name="LAUNCH" duration_ms="2000">
+    <Little min_khz="960000"/>
+    <Big min_khz="1248000"/>
+    <Gpu min_pwrlevel="4" max_pwrlevel="0"/>
+    <InputBoost freq="0:960000 4:1248000 5:1248000" ms="2000"/>
+  </Hint>
+
+  <Hint name="VIDEO_ENCODE">
+    <Little hispeed_khz="768000"/>
+    <Big hispeed_khz="1248000"/>
+  </Hint>
+
+  <Hint name="LOW_POWER">
+    <Little max_khz="960000"/>
+    <Big max_khz="768000"/>
+    <Gpu max_pwrlevel="5"/>
+  </Hint>
+
+  <Hint name="SUSTAINED_PERFORMANCE">
+    <Big max_khz="1248000"/>
+    <Gpu max_pwrlevel="1"/>
+  </Hint>
+
+  <Hint name="VR_MODE">
+    <Big min_khz="1248000" max_khz="1248000"/>
+    <Gpu max_pwrlevel="1"/>
+  </Hint>
+
+  <Hint name="INTERACTIVE_OFF">
+    <Little min_khz="384000"/>
+    <Big min_khz="384000"/>
+    <InputBoost freq="0:960000 4:0" ms="40"/>
+  </Hint>
+</HintConfigs>

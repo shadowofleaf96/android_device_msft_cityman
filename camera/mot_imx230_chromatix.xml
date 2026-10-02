@@ -1,0 +1,105 @@
+<!--
+  Chromatix names for CameraId 0 mot_imx230.
+  Basenames match clark libchromatix_mot_imx230_*.so (no cpp_preview / 3A .so).
+  sensor_resolution_index matches libmmcamera_mot_imx230.so out_info:
+    0 5344x4016 still, 1 5344x4016 slow, 2 5344x3006 16:9,
+    3 4664x2624 4k-class, 4 1336x752 hfr_120, 5 5344x3006 ihdr,
+    6 4664x2624 ihdr 4k.
+  A3* reuse ISP libs (no mot_imx230_*_3a.so).
+-->
+<ChromatixConfigurationRoot>
+  <CommonChromatixInfo>
+    <ChromatixName>
+      <ISPCommon>mot_imx230_common</ISPCommon>
+      <PostProc>mot_imx230_postproc</PostProc>
+    </ChromatixName>
+    <ChromatixName special_mode_mask="SCENE_NIGHT">
+      <ISPCommon>mot_imx230_common</ISPCommon>
+      <ISPPreview>mot_imx230_snapshot_night</ISPPreview>
+      <ISPSnapshot>mot_imx230_snapshot_night</ISPSnapshot>
+      <CPPSnapshot>mot_imx230_cpp_snapshot_night</CPPSnapshot>
+      <PostProc>mot_imx230_postproc</PostProc>
+    </ChromatixName>
+  </CommonChromatixInfo>
+  <ResolutionChromatixInfo>
+    <ChromatixName sensor_resolution_index="0">
+      <ISPPreview>mot_imx230_snapshot</ISPPreview>
+      <ISPSnapshot>mot_imx230_snapshot</ISPSnapshot>
+      <ISPVideo>mot_imx230_snapshot</ISPVideo>
+      <CPPPreview>mot_imx230_cpp_snapshot</CPPPreview>
+      <CPPSnapshot>mot_imx230_cpp_snapshot</CPPSnapshot>
+      <CPPVideo>mot_imx230_cpp_snapshot</CPPVideo>
+      <CPPLiveshot>mot_imx230_cpp_liveshot</CPPLiveshot>
+      <A3Preview>mot_imx230_snapshot</A3Preview>
+      <A3Video>mot_imx230_snapshot</A3Video>
+    </ChromatixName>
+    <ChromatixName sensor_resolution_index="1">
+      <ISPPreview>mot_imx230_snapshot</ISPPreview>
+      <ISPSnapshot>mot_imx230_snapshot</ISPSnapshot>
+      <ISPVideo>mot_imx230_snapshot</ISPVideo>
+      <CPPPreview>mot_imx230_cpp_snapshot</CPPPreview>
+      <CPPSnapshot>mot_imx230_cpp_snapshot</CPPSnapshot>
+      <CPPVideo>mot_imx230_cpp_snapshot</CPPVideo>
+      <CPPLiveshot>mot_imx230_cpp_liveshot</CPPLiveshot>
+      <A3Preview>mot_imx230_snapshot</A3Preview>
+      <A3Video>mot_imx230_snapshot</A3Video>
+    </ChromatixName>
+    <ChromatixName sensor_resolution_index="2">
+      <ISPPreview>mot_imx230_default_video</ISPPreview>
+      <ISPSnapshot>mot_imx230_snapshot</ISPSnapshot>
+      <ISPVideo>mot_imx230_default_video</ISPVideo>
+      <CPPPreview>mot_imx230_cpp_video</CPPPreview>
+      <CPPSnapshot>mot_imx230_cpp_snapshot</CPPSnapshot>
+      <CPPVideo>mot_imx230_cpp_video</CPPVideo>
+      <CPPLiveshot>mot_imx230_cpp_liveshot</CPPLiveshot>
+      <A3Preview>mot_imx230_default_video</A3Preview>
+      <A3Video>mot_imx230_default_video</A3Video>
+    </ChromatixName>
+    <ChromatixName sensor_resolution_index="3">
+      <ISPPreview>mot_imx230_video_4k</ISPPreview>
+      <ISPSnapshot>mot_imx230_snapshot</ISPSnapshot>
+      <ISPVideo>mot_imx230_video_4k</ISPVideo>
+      <CPPPreview>mot_imx230_cpp_video_4k</CPPPreview>
+      <CPPSnapshot>mot_imx230_cpp_snapshot</CPPSnapshot>
+      <CPPVideo>mot_imx230_cpp_video_4k</CPPVideo>
+      <CPPLiveshot>mot_imx230_cpp_liveshot_video_4k</CPPLiveshot>
+      <A3Preview>mot_imx230_video_4k</A3Preview>
+      <A3Video>mot_imx230_video_4k</A3Video>
+    </ChromatixName>
+    <ChromatixName sensor_resolution_index="4">
+      <ISPPreview>mot_imx230_hfr_120</ISPPreview>
+      <ISPSnapshot>mot_imx230_snapshot</ISPSnapshot>
+      <ISPVideo>mot_imx230_hfr_120</ISPVideo>
+      <CPPPreview>mot_imx230_cpp_hfr_120</CPPPreview>
+      <CPPSnapshot>mot_imx230_cpp_hfr_120</CPPSnapshot>
+      <CPPVideo>mot_imx230_cpp_hfr_120</CPPVideo>
+      <CPPLiveshot>mot_imx230_cpp_hfr_120</CPPLiveshot>
+      <A3Preview>mot_imx230_hfr_120</A3Preview>
+      <A3Video>mot_imx230_hfr_120</A3Video>
+    </ChromatixName>
+    <ChromatixName sensor_resolution_index="5">
+      <ISPCommon>mot_imx230_common_ihdr</ISPCommon>
+      <ISPPreview>mot_imx230_video_ihdr</ISPPreview>
+      <ISPSnapshot>mot_imx230_snapshot</ISPSnapshot>
+      <ISPVideo>mot_imx230_video_ihdr</ISPVideo>
+      <CPPPreview>mot_imx230_cpp_video_ihdr</CPPPreview>
+      <CPPSnapshot>mot_imx230_cpp_snapshot</CPPSnapshot>
+      <CPPVideo>mot_imx230_cpp_video_ihdr</CPPVideo>
+      <CPPLiveshot>mot_imx230_cpp_liveshot_video_ihdr</CPPLiveshot>
+      <A3Preview>mot_imx230_video_ihdr</A3Preview>
+      <A3Video>mot_imx230_video_ihdr</A3Video>
+    </ChromatixName>
+    <ChromatixName sensor_resolution_index="6">
+      <ISPCommon>mot_imx230_common_ihdr</ISPCommon>
+      <ISPPreview>mot_imx230_video_ihdr_4k</ISPPreview>
+      <ISPSnapshot>mot_imx230_snapshot</ISPSnapshot>
+      <ISPVideo>mot_imx230_video_ihdr_4k</ISPVideo>
+      <CPPPreview>mot_imx230_cpp_video_ihdr_4k</CPPPreview>
+      <CPPSnapshot>mot_imx230_cpp_snapshot</CPPSnapshot>
+      <CPPVideo>mot_imx230_cpp_video_ihdr_4k</CPPVideo>
+      <CPPLiveshot>mot_imx230_cpp_liveshot_video_ihdr_4k</CPPLiveshot>
+      <A3Preview>mot_imx230_video_ihdr_4k</A3Preview>
+      <A3Video>mot_imx230_video_ihdr_4k</A3Video>
+    </ChromatixName>
+  </ResolutionChromatixInfo>
+</ChromatixConfigurationRoot>

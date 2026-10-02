@@ -405,4 +405,13 @@
 
     <!-- SD card is hot-pluggable on this device -->
     <bool name="config_batterySdCardAccessibility">true</bool>
+
+    <!-- Cityman camera overlay. Rear mot_imx230 CameraId 0 -->
+    <bool name="config_camera_sound_forced">false</bool>
+    <!-- No twist-to-camera / IR / ToF wake sensor. Hardware shutter is gpio-keys. -->
+    <integer name="config_cameraLaunchGestureSensorType">-1</integer>
+    <string translatable="false" name="config_cameraLaunchGestureSensorStringType"></string>
+    <bool name="config_cameraDoubleTapPowerGestureEnabled">true</bool>
+    <integer name="config_cameraLiftTriggerSensorType">-1</integer>
+    <string translatable="false" name="config_cameraLiftTriggerSensorStringType"></string>
 </resources>

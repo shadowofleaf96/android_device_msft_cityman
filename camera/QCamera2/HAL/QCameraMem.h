@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2015, The Linux Foundataion. All rights reserved.
+/* Copyright (c) 2012-2016, The Linux Foundataion. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -40,6 +40,9 @@ extern "C" {
 #include <linux/msm_ion.h>
 #include <mm_camera_interface.h>
 }
+
+//OFFSET, SIZE, USAGE, TIMESTAMP, FORMAT
+#define VIDEO_METADATA_NUM_INTS 5
 
 namespace qcamera {
 
@@ -189,16 +192,15 @@ public:
 
 protected:
     camera_request_memory mGetMemory;
-    void* mCallbackCookie;
     camera_memory_t *mCameraMemory[MM_CAMERA_MAX_NUM_FRAMES];
+    void* mCallbackCookie;
 };
 
 // Externel heap memory is used for memories shared with
 // framework. They are allocated from /dev/ion or gralloc.
 class QCameraVideoMemory : public QCameraStreamMemory {
 public:
-    QCameraVideoMemory(camera_request_memory getMemory,
-            void* cbCookie, bool cached,
+    QCameraVideoMemory(camera_request_memory getMemory, void* cbCookie, bool cached,
             cam_stream_buf_type bufType = CAM_STREAM_BUF_TYPE_MPLANE);
     virtual ~QCameraVideoMemory();
 
@@ -209,11 +211,17 @@ public:
     virtual int getMatchBufIndex(const void *opaque, bool metadata) const;
     int allocateMeta(uint8_t buf_cnt);
     void deallocateMeta();
-
+#ifdef USE_MEDIA_EXTENSIONS
+    native_handle_t *updateNativeHandle(uint32_t index, bool metadata = true);
+    static int closeNativeHandle(const void *data);
+    int closeNativeHandle(const void *data, bool metadata);
+#endif
 private:
     camera_memory_t *mMetadata[MM_CAMERA_MAX_NUM_FRAMES];
-    native_handle_t *mNativeHandles[MM_CAMERA_MAX_NUM_FRAMES];
     uint8_t mMetaBufCount;
+#ifdef USE_MEDIA_EXTENSIONS
+    native_handle_t *mNativeHandle[MM_CAMERA_MAX_NUM_FRAMES];
+#endif
 };
 
 

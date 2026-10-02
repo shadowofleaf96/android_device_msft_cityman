@@ -14,15 +14,6 @@
 # limitations under the License.
 #
 
-# This contains the module build definitions for the hardware-specific
-# components for this device.
-#
-# As much as possible, those components should be built unconditionally,
-# with device-specific names to avoid collisions, to avoid device-specific
-# bitrot and build breakages. Building a component unconditionally does
-# *not* include it on all devices, so it is safe even with hardware-specific
-# components.
-
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
@@ -31,5 +22,8 @@ LOCAL_MODULE_RELATIVE_PATH := hw
 LOCAL_SHARED_LIBRARIES := liblog
 LOCAL_MODULE := lights.cityman
 LOCAL_MODULE_TAGS := optional
+LOCAL_PROPRIETARY_MODULE := true
+LOCAL_CFLAGS := -Wall -Werror
+LOCAL_REQUIRED_MODULES := android.hardware.light@2.0-service.cityman
 
 include $(BUILD_SHARED_LIBRARY)

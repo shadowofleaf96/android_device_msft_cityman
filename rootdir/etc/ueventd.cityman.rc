@@ -4,6 +4,7 @@
 /dev/ion                  0664   system     system
 /dev/video*               0660   system     camera
 /dev/media*               0660   system     camera
+/dev/msm_camera/*         0660   cameraserver  camera
 /dev/v4l-subdev*          0660   system     camera
 /dev/jpeg0                0660   system     camera
 /dev/jpeg1                0660   system     camera
@@ -39,7 +40,7 @@
 /dev/smd4                 0660   system     system
 /dev/smd7                 0660   bluetooth  bluetooth
 /dev/smd8                 0660   system     system
-/dev/smd_cxm_qmi          0640   radio      radio
+/dev/smd_cxm_qmi          0000   root       root
 /dev/rmnet_ctrl           0660   usb        usb
 /dev/dpl_ctrl             0660   usb        usb
 #permissions for CSVT
@@ -47,7 +48,7 @@
 /dev/smd21                0660   system     system
 /dev/smd22                0660   system     system
 /dev/smd36                0660   system     system
-/dev/smd_cxm_qmi          0640   radio      radio
+/dev/smd_cxm_qmi          0000   root       root
 /dev/smdcnt_rev0          0640   radio      radio
 /dev/smdcnt_rev1          0640   radio      radio
 /dev/smdcnt_rev2          0640   radio      radio
@@ -102,3 +103,60 @@
 /dev/block/platform/soc.0/f9824900.sdhci/by-name/persistent 0600 system system
 # sensor HUB
 /dev/spich                0640   system     system
+
+# Flash sysfs: qpnp-flash-led led:flash_0/1 + led:torch_0/1 (msm-pmi8994.dtsi).
+# gpio-leds torch.dtsi label is led:flash_torch (one colon).
+/sys/class/leds/led:flash_0               brightness           0660    system    camera
+/sys/class/leds/led:flash_1               brightness           0660    system    camera
+/sys/class/leds/led:flash_torch           brightness           0660    system    camera
+/sys/class/leds/led:torch_0               brightness           0660    system    camera
+/sys/class/leds/led:torch_1               brightness           0660    system    camera
+
+# Health 2.1 walks type to pick Battery vs USB vs Wireless. qpnp-fg is bms.
+/sys/devices/soc.0/qpnp-fg*               type                 0644    system    system
+/sys/devices/soc.0/qpnp-fg*               capacity             0644    system    system
+/sys/devices/soc.0/qpnp-fg*               voltage_now          0644    system    system
+/sys/devices/soc.0/qpnp-fg*               current_now          0644    system    system
+/sys/devices/soc.0/qpnp-fg*               temp                 0644    system    system
+/sys/devices/soc.0/qpnp-fg*               charge_full          0644    system    system
+/sys/devices/soc.0/qpnp-fg*               charge_full_design   0644    system    system
+/sys/devices/soc.0/qpnp-fg*               cycle_count          0644    system    system
+/sys/devices/soc.0/qpnp-fg*               battery_type         0644    system    system
+/sys/devices/soc.0/qpnp-fg*               resistance_id        0644    system    system
+/sys/devices/soc.0/qpnp-smbcharger*       type                 0644    system    system
+/sys/devices/soc.0/qpnp-smbcharger*       status               0644    system    system
+/sys/devices/soc.0/qpnp-smbcharger*       health               0644    system    system
+/sys/devices/soc.0/qpnp-smbcharger*       present              0644    system    system
+/sys/devices/soc.0/qpnp-smbcharger*       capacity             0644    system    system
+/sys/devices/soc.0/qpnp-smbcharger*       voltage_now          0644    system    system
+/sys/devices/soc.0/qpnp-smbcharger*       current_now          0644    system    system
+/sys/devices/soc.0/qpnp-smbcharger*       temp                 0644    system    system
+/sys/devices/soc.0/qpnp-smbcharger*       charge_full          0644    system    system
+/sys/devices/soc.0/qpnp-smbcharger*       charge_full_design   0644    system    system
+/sys/devices/soc.0/qpnp-smbcharger*       charge_counter       0644    system    system
+/sys/devices/soc.0/qpnp-smbcharger*       cycle_count          0644    system    system
+/sys/devices/soc.0/qpnp-smbcharger*       technology           0644    system    system
+/sys/devices/soc.0/qpnp-smbcharger*       charging_enabled     0664    system    system
+/sys/devices/soc.0/qpnp-smbcharger*       battery_charging_enabled 0664 system system
+/sys/devices/soc.0/qpnp-smbcharger*       current_max          0664    system    system
+/sys/devices/soc.0/qpnp-smbcharger*       input_current_max    0664    system    system
+/sys/devices/soc.0/qpnp-smbcharger*       online               0644    system    system
+/sys/devices/soc.0/f9200000.ssusb*        type                 0644    system    system
+/sys/devices/soc.0/f9200000.ssusb*        online               0644    system    system
+/sys/devices/soc.0/f9200000.ssusb*        present              0644    system    system
+
+# lights: PMI8994 RGB + mdss lcd-backlight (system uid, 0644 root fails)
+/sys/class/leds/red                  brightness      0664    system    system
+/sys/class/leds/red                  trigger         0664    system    system
+/sys/class/leds/green                brightness      0664    system    system
+/sys/class/leds/green                trigger         0664    system    system
+/sys/class/leds/blue                 brightness      0664    system    system
+/sys/class/leds/blue                 trigger         0664    system    system
+/sys/class/leds/lcd-backlight        brightness      0664    system    system
+
+# vibrator HIDL: qpnp-haptic timed_output
+/sys/class/timed_output/vibrator     enable          0660    system    system
+/sys/class/timed_output/vibrator     vtg_level       0660    system    system
+/sys/class/timed_output/vibrator     vtg_min         0444    system    system
+/sys/class/timed_output/vibrator     vtg_max         0444    system    system
+/sys/class/timed_output/vibrator     vtg_default     0444    system    system

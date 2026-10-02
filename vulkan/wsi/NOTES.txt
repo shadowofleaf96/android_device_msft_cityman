@@ -1,0 +1,192 @@
+Cityman Android Vulkan WSI
+==========================
+
+Notes and a probe only. Do not hook SystemUI. Do not enable HWUI Vulkan.
+Do not commit from this directory.
+
+Panel is 1440×2560, TE 60 Hz (Adreno 418). HWUI stays Skia/OpenGL.
+`ro.hwui.use_vulkan` stays unset (see `vulkan/HWUI.txt`).
+
+
+What already works (loader, measured)
+-------------------------------------
+
+WSI lives in AOSP `libvulkan.so`
+(`frameworks/native/vulkan/libvulkan/driver.cpp` + `swapchain.cpp`).
+The Adreno ICD (`vulkan.msm8992.so`) does not implement Khronos WSI.
+
+`vkjson` / `libvkjson` already dumps loader instance extensions. On this
+telephone that list is:
+
+    VK_KHR_surface                      spec 25
+    VK_KHR_android_surface              spec 6
+    VK_EXT_swapchain_colorspace         spec 4
+    VK_KHR_get_surface_capabilities2    spec 1
+    VK_EXT_debug_report                 spec 9
+
+    devices: 1   (Adreno (TM) 418, after same_process_hal_file label)
+    deviceGroups: 1
+    layers: []
+
+Live vkjson now has devices:1 Adreno (TM) 418 after
+`same_process_hal_file`. Present still needs a real ANativeWindow.
+
+Those five names are injected by the loader. They are not ICD features.
+`VK_KHR_swapchain` is a **device** extension: the loader remaps the ICD
+name `VK_ANDROID_native_buffer` to `VK_KHR_swapchain` when a physical
+device exists. Live dump lists `VK_KHR_swapchain` spec 68 on that
+device. Present still needs ANativeWindow — do not invent a fake
+window. `vkGetPhysicalDeviceQueueFamilyProperties` has no present-bit
+without a `VkSurfaceKHR`.
+
+`cityman-vk-probe` (`vulkan/vk_probe.c`) is the HAL / physical-device
+check. `wsi_check.c` re-lists instance WSI, then after a 1.0 instance
+prints whether `VK_KHR_swapchain` is on the physical device when n>=1.
+
+
+Who creates what
+----------------
+
+    SystemUI / glass (later, other agent)
+        SurfaceControl + android.view.Surface
+            -> ANativeWindow  (JNI ANativeWindow_fromSurface)
+                -> libvulkan WSI
+                    vkCreateAndroidSurfaceKHR -> VkSurfaceKHR
+                    vkCreateSwapchainKHR      -> gralloc images
+                        -> SurfaceFlinger / HWC
+                            -> 1440×2560 panel
+
+The ICD only imports those gralloc handles
+(`VK_ANDROID_native_buffer` / `vk_android_native_buffer.h`).
+It never sees ANativeWindow.
+
+
+How a later SystemUI / glass layer creates ANativeWindow + VkSurfaceKHR
+-----------------------------------------------------------------------
+
+Do this on a **dedicated** SurfaceControl. Do not steal ViewRootImpl's
+BLAST surface (that one is HWUI / GLES). Do not set
+`ro.hwui.use_vulkan` or `debug.hwui.renderer=skiavk`.
+
+1. Java (SystemUI or a cityman glass package — not this tree):
+
+       SurfaceControl sc = new SurfaceControl.Builder()
+               .setName("cityman-glass")
+               .setBufferSize(width, height)   // overlay size, not invent 90/120 Hz
+               .setFormat(PixelFormat.RGBA_8888)
+               .setOpaque(false)
+               .build();
+       Surface surface = new Surface(sc);
+       // Transaction: reparent to the display / SystemUI container,
+       // setLayer, setAlpha, show. Then pass `surface` across JNI.
+
+   ViewRootImpl BLASTBufferQueue is the other legal producer of a
+   `Surface`. Use it only if glass is its own window, not the status-bar
+   or navigation-bar HWUI root.
+
+2. Native:
+
+       ANativeWindow* window = ANativeWindow_fromSurface(env, surface);
+       // Release with ANativeWindow_release when the surface dies.
+
+3. Vulkan instance (loader WSI):
+
+       const char* inst_ext[] = {
+           "VK_KHR_surface",
+           "VK_KHR_android_surface",
+       };
+       vkCreateInstance(...);   // apiVersion 1.0 on this ICD
+
+       VkAndroidSurfaceCreateInfoKHR sci = {
+           .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
+           .pNext = NULL,
+           .flags = 0,
+           .window = window,
+       };
+       vkCreateAndroidSurfaceKHR(instance, &sci, NULL, &vk_surface);
+
+   Loader `CreateAndroidSurfaceKHR` (`swapchain.cpp`) holds the window,
+   reads consumer usage, then
+   `native_window_api_connect(window, NATIVE_WINDOW_API_EGL)`.
+   The EGL token is historical. The same ANativeWindow cannot also have
+   an EGL context. DestroySurfaceKHR disconnects.
+
+4. Present (blocked today):
+
+       vkEnumeratePhysicalDevices >= 1          // live vkjson n=1 Adreno 418; present still needs ANativeWindow
+       vkGetPhysicalDeviceSurfaceSupportKHR
+       vkGetPhysicalDeviceSurfaceCapabilitiesKHR
+           // width/height from NATIVE_WINDOW_DEFAULT_{WIDTH,HEIGHT}
+           // transform from NATIVE_WINDOW_TRANSFORM_HINT
+       vkCreateDevice with "VK_KHR_swapchain"
+           // ICD must export VK_ANDROID_native_buffer; loader renames it
+       vkCreateSwapchainKHR
+           // FIFO to match 60 Hz TE. minImageCount from capabilities
+           // (SF max acquired buffers is 3 on this product)
+       acquire / draw / vkQueuePresentKHR
+
+Loader surface-support formats (`GetPhysicalDeviceSurfaceSupportKHR`):
+RGBA_8888, RGB_565, RGBA_FP16, RGBA_1010102. Translucent glass uses
+RGBA_8888. Other HAL formats are rejected unless the consumer usage is
+GPU-only.
+
+Color space: loader also advertises `VK_EXT_swapchain_colorspace`.
+Do not invent a wide-gamut path until HWC + the ICD both list it.
+
+
+iOS LiquidGlassKit is not this path
+-----------------------------------
+
+A later glass look may copy iOS Liquid Glass visuals. Do not port a
+Metal / CABackdropLayer kit. Android glass is: own SurfaceControl, own
+VkSurfaceKHR, SF composite. Backdrop / blur sampling is a later
+SurfaceFlinger question, not WSI.
+
+
+Gates before anyone presents
+----------------------------
+
+  1. `vkEnumeratePhysicalDevices` >= 1   (passed: probe + tri + vkjson)
+  2. ICD exports `VK_ANDROID_native_buffer` (shows as `VK_KHR_swapchain`)
+  3. A real ANativeWindow from a SurfaceControl (not a null stub)
+  4. A triangle on that swapchain
+
+(1) has passed (probe + tri + live vkjson devices:1 after
+`same_process_hal_file`). `vkCreateAndroidSurfaceKHR` can still wrap a
+window. Swapchain create and present still need a real ANativeWindow
+(gate 3). Do not invent a fake window. Do not hook SystemUI.
+
+
+What this stub is
+-----------------
+
+    vulkan/wsi/NOTES.txt      this file
+    vulkan/wsi/wsi_check.c    instance WSI + device VK_KHR_swapchain
+    vulkan/wsi/Android.bp     optional `m cityman-wsi-check`
+
+`wsi_check` links `libvulkan` and calls
+`vkEnumerateInstanceExtensionProperties`. It may create a VkInstance
+1.0 with the two surface extensions and resolve
+`vkCreateAndroidSurfaceKHR`. After that instance, if
+`vkEnumeratePhysicalDevices` n>=1 it prints whether `VK_KHR_swapchain`
+is on the physical device. Queue-family present-bit cannot be tested
+without a surface. It does **not** build an ANativeWindow or a
+VkSurfaceKHR.
+
+Not in `PRODUCT_PACKAGES`. Do not add it to `cityman-vulkan.mk`
+(other agent). `vkjson` already printed the same loader list.
+
+Live `cityman-wsi-check` (`out/qa-vulkan-wsi.log`, serial 9523fa36):
+instance WSI ok, n=1 Adreno (TM) 418, device ext `VK_KHR_swapchain`
+present. Queue-family present-bit not tested (no ANativeWindow).
+
+
+Do not
+------
+
+- Hook frameworks/base SystemUI, ScreenDecorations, or ViewRootImpl.
+- Set `ro.hwui.use_vulkan` or `debug.hwui.renderer`.
+- Share HWUI's ANativeWindow with Vulkan.
+- Invent a physical device, a fake swapchain, or a CSID-style stub HAL.
+- Advertise Vulkan 1.1 / 1.4 feature XML.
+- Call this Working without an `out/qa-*` log from the telephone.

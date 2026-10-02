@@ -283,7 +283,9 @@ int32_t QCameraPostProcessor::start(QCameraChannel *pSrcChannel)
             !m_parent->isLongshotEnabled() && (mTotalNumReproc > 0)) {
 
         QCameraChannel *pChannel = NULL;
-        pChannel = m_parent->needReprocess() ? mPPChannels[0] : pSrcChannel;
+        int ppChannel_idx = mTotalNumReproc - 1;
+        pChannel = m_parent->needReprocess() ? mPPChannels[ppChannel_idx] :
+                pSrcChannel;
         QCameraStream *pSnapshotStream = NULL;
         QCameraStream *pThumbStream = NULL;
         bool thumb_stream_needed = ((!m_parent->isZSLMode() ||
@@ -315,7 +317,7 @@ int32_t QCameraPostProcessor::start(QCameraChannel *pSrcChannel)
         // If thumbnail is not part of the reprocess channel, then
         // try to get it from the source channel
         if ((thumb_stream_needed) && (NULL == pThumbStream) &&
-                (pChannel == mPPChannels[0])) {
+                (pChannel == mPPChannels[ppChannel_idx])) {
             for (uint32_t i = 0; i < pSrcChannel->getNumOfStreams(); ++i) {
                 QCameraStream *pStream = pSrcChannel->getStreamByIndex(i);
 
@@ -1985,10 +1987,6 @@ int32_t QCameraPostProcessor::encodeData(qcamera_jpeg_data_t *jpeg_job_data,
     jpg_job.encode_job.main_dim.dst_dim = dst_dim;
     jpg_job.encode_job.main_dim.crop = crop;
 
-    // get 3a sw version info
-    cam_q3a_version_t sw_version =
-        m_parent->getCamHalCapabilities()->q3a_version;
-
     // get exif data
     QCameraExif *pJpegExifObj = m_parent->getExifData();
     jpeg_job_data->pJpegExifObj = pJpegExifObj;
@@ -1996,14 +1994,6 @@ int32_t QCameraPostProcessor::encodeData(qcamera_jpeg_data_t *jpeg_job_data,
         jpg_job.encode_job.exif_info.exif_data = pJpegExifObj->getEntries();
         jpg_job.encode_job.exif_info.numOfEntries =
             pJpegExifObj->getNumOfEntries();
-        jpg_job.encode_job.exif_info.debug_data.sw_3a_version[0] =
-            sw_version.major_version;
-        jpg_job.encode_job.exif_info.debug_data.sw_3a_version[1] =
-            sw_version.minor_version;
-        jpg_job.encode_job.exif_info.debug_data.sw_3a_version[2] =
-            sw_version.patch_version;
-        jpg_job.encode_job.exif_info.debug_data.sw_3a_version[3] =
-            sw_version.new_feature_des;
     }
 
     // set rotation only when no online rotation or offline pp rotation is done before

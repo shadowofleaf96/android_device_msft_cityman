@@ -7,168 +7,248 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <log/log.h>
+#include <stdarg.h>
 
 #undef LOG_TAG
 #define LOG_TAG "RIL_WRAPPER"
 
+#undef ALOGI
+#define ALOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
+
 static const struct RIL_Env *g_original_env = NULL;
 static const RIL_RadioFunctions *g_original_funcs = NULL;
 
-static int g_faked_radio_off = 1;
-static RIL_Token g_get_sim_status_token = NULL;
-static int g_needs_provisioning = 1;
+static int g_faked_radio_off = 0;
+static RIL_Token g_sim_status_token = NULL;
+static RIL_Token g_radio_power_on_token = NULL;
 
-static void* inject_qmi_thread(void* arg) {
-    sleep(1);
-    ALOGI("  -> [QMI INJECT] Attempting to forcefully provision the SIM using stolen handles...");
-    void* qmicci = dlopen("/vendor/lib64/libqmi_cci.so", RTLD_NOW);
-    void* qcril = dlopen("/vendor/lib64/libril-qc-qmi-1.so", RTLD_NOW);
-    if (!qmicci || !qcril) {
-        ALOGE("  -> [QMI INJECT] Failed to load QMI libraries!");
-        return NULL;
-    }
-    
-    void* (*get_user_handle)(int) = dlsym(qcril, "qcril_qmi_client_get_user_handle");
-    int (*send_raw)(void*, unsigned int, void*, unsigned int, void*, unsigned int, unsigned int*, unsigned int) = dlsym(qmicci, "qmi_client_send_raw_msg_sync");
-    
-    if (!get_user_handle || !send_raw) {
-        ALOGE("  -> [QMI INJECT] Failed to resolve QMI symbols!");
-        return NULL;
-    }
-    
-    uint8_t req[] = {
-        0x01, 0x02, 0x00, 0x00, 0x00,
-        0x02, 0x01, 0x00, 0x00
-    };
-    uint8_t resp[256];
-    
-    for (int i = 0; i < 20; i++) {
-        void* client = get_user_handle(i);
-        if (client) {
-            unsigned int resp_len = 0;
-            memset(resp, 0, sizeof(resp));
-            int err = send_raw(client, 0x002B, req, sizeof(req), resp, sizeof(resp), &resp_len, 4000);
-            
-            char hex_buf[512] = {0};
-            for (unsigned int j = 0; j < resp_len && j < 128; j++) {
-                sprintf(hex_buf + strlen(hex_buf), "%02X ", resp[j]);
-            }
-            ALOGI("  -> [QMI INJECT] handle enum %d (ptr %p) send_raw err: %d, resp_len: %d, data: %s", i, client, err, resp_len, hex_buf);
-        }
-    }
-    return NULL;
-}
+/* Diagnostic token tracking */
+static RIL_Token g_voice_reg_token = NULL;
+static RIL_Token g_data_reg_token = NULL;
+static RIL_Token g_operator_token = NULL;
+static RIL_Token g_sim_io_token = NULL;
+static int g_sim_io_fileid = 0;
+static int g_sim_io_command = 0;
 
-static void wrapped_OnRequestComplete(RIL_Token t, RIL_Errno e, void *response, size_t responselen) {
-    ALOGI("OnRequestComplete: errno=%d, responselen=%zu", (int)e, responselen);
+/* Sentinel token for injected requests */
+static int g_sentinel_token_storage = 0;
+#define SENTINEL_TOKEN ((RIL_Token)&g_sentinel_token_storage)
 
-    if (t == g_get_sim_status_token) {
-        g_get_sim_status_token = NULL;
-        
-        if (e == RIL_E_SUCCESS && response != NULL) {
-            RIL_CardStatus_v6 *p_cur = (RIL_CardStatus_v6 *)response;
-            ALOGI("  -> GET_SIM_STATUS response: card_state=%d, num_apps=%d", p_cur->card_state, p_cur->num_applications);
-            
-            if (p_cur->card_state == 0 || p_cur->num_applications == 0 || responselen < sizeof(RIL_CardStatus_v6)) {
-                ALOGI("  -> [OVERRIDE] SIM ABSENT or no apps! Faking PRESENT and 1 app...");
-                
-                size_t fake_len = sizeof(RIL_CardStatus_v6);
-                RIL_CardStatus_v6* fake_resp = (RIL_CardStatus_v6*)malloc(fake_len);
-                if (fake_resp) {
-                    memset(fake_resp, 0, fake_len);
-                    fake_resp->card_state = 1;
-                    fake_resp->universal_pin_state = 0;
-                    fake_resp->gsm_umts_subscription_app_index = 0;
-                    fake_resp->cdma_subscription_app_index = -1;
-                    fake_resp->ims_subscription_app_index = -1;
-                    fake_resp->num_applications = 1;
-                    
-                    fake_resp->applications[0].app_type = 2;
-                    fake_resp->applications[0].app_state = 5;
-                    
-                    if (g_needs_provisioning) {
-                        g_needs_provisioning = 0;
-                        pthread_t tid;
-                        pthread_create(&tid, NULL, inject_qmi_thread, NULL);
-                        pthread_detach(tid);
-                    }
-                    
-                    g_original_env->OnRequestComplete(t, e, fake_resp, fake_len);
-                    free(fake_resp);
-                    return;
-                }
-            } else {
-                if (p_cur->gsm_umts_subscription_app_index < 0) {
-                    ALOGI("  -> [OVERRIDE] Forcing gsm_umts_subscription_app_index to 0!");
-                    p_cur->gsm_umts_subscription_app_index = 0;
-                }
-                
-                if (p_cur->applications[0].app_state != 5) {
-                    ALOGI("  -> [OVERRIDE] Forcing app_state to 5 (READY)!");
-                    p_cur->applications[0].app_state = 5;
-                }
-                
-                if (p_cur->applications[0].app_type == 0) {
-                    ALOGI("  -> [OVERRIDE] Forcing app_type to 2 (USIM)!");
-                    p_cur->applications[0].app_type = 2;
-                }
-                
-                if (g_needs_provisioning) {
-                    g_needs_provisioning = 0;
-                    pthread_t tid;
-                    pthread_create(&tid, NULL, inject_qmi_thread, NULL);
-                    pthread_detach(tid);
-                }
-            }
-        }
-    }
-    
-    g_original_env->OnRequestComplete(t, e, response, responselen);
-}
 
-static void wrapped_OnUnsolicitedResponse(int unsolResponse, const void *data, size_t datalen) {
-    ALOGI("OnUnsolicitedResponse: id=%d, datalen=%zu", unsolResponse, datalen);
-    if (unsolResponse == RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED) {
-        ALOGI("  -> UNSOL_RESPONSE_RADIO_STATE_CHANGED");
-    } else if (unsolResponse == RIL_UNSOL_RESPONSE_SIM_STATUS_CHANGED) {
-        ALOGI("  -> UNSOL_RESPONSE_SIM_STATUS_CHANGED");
-    }
-    
-    if (g_faked_radio_off && unsolResponse == RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED) {
-        ALOGI("  -> Suppressing UNSOL_RESPONSE_RADIO_STATE_CHANGED while faking OFF");
+static void wrapped_OnRequestComplete(RIL_Token t, RIL_Errno e,
+                                       void *response, size_t responselen) {
+    /*
+     * Intercept completions for our injected requests.
+     */
+    if (t == SENTINEL_TOKEN) {
+        ALOGI("[INJECT] Intercepted completion for injected request, e=%d - dropping", e);
         return;
     }
-    
+
+    /* ===== GET_SIM_STATUS response handling & override ===== */
+    if (t == g_sim_status_token && g_sim_status_token != NULL) {
+        g_sim_status_token = NULL;
+        if (e == RIL_E_SUCCESS && response != NULL && responselen >= sizeof(RIL_CardStatus_v6)) {
+            RIL_CardStatus_v6 *cs = (RIL_CardStatus_v6 *)response;
+            ALOGI("  -> [RESP] GET_SIM_STATUS: card_state=%d, num_apps=%d, gsm_sub_idx=%d",
+                  cs->card_state, cs->num_applications, cs->gsm_umts_subscription_app_index);
+
+            if (cs->card_state == RIL_CARDSTATE_PRESENT && cs->num_applications > 0) {
+                for (int i = 0; i < cs->num_applications; i++) {
+                    ALOGI("  -> [RESP] App[%d]: type=%d, state=%d, perso=%d, aid=%s",
+                          i, cs->applications[i].app_type, cs->applications[i].app_state,
+                          cs->applications[i].perso_substate,
+                          cs->applications[i].aid_ptr ? cs->applications[i].aid_ptr : "(null)");
+
+                    // If app is DETECTED (1) or SUBSCRIPTION_PERSO (4), promote to READY (5)
+                    if (cs->applications[i].app_state == RIL_APPSTATE_DETECTED ||
+                        cs->applications[i].app_state == RIL_APPSTATE_SUBSCRIPTION_PERSO) {
+                        ALOGI("  -> [OVERRIDE] Forcing App[%d] app_state from %d to RIL_APPSTATE_READY (5)",
+                              i, cs->applications[i].app_state);
+                        cs->applications[i].app_state = RIL_APPSTATE_READY;
+                    }
+                }
+
+                // Ensure gsm_umts_subscription_app_index is 0
+                if (cs->gsm_umts_subscription_app_index < 0) {
+                    ALOGI("  -> [OVERRIDE] Forcing gsm_umts_subscription_app_index from %d to 0",
+                          cs->gsm_umts_subscription_app_index);
+                    cs->gsm_umts_subscription_app_index = 0;
+                }
+            }
+        }
+    }
+
+    /* ===== VOICE_REGISTRATION_STATE response logging ===== */
+    if (t == g_voice_reg_token && g_voice_reg_token != NULL) {
+        g_voice_reg_token = NULL;
+        ALOGI("  -> [RESP] VOICE_REGISTRATION_STATE: e=%d, responselen=%zu", e, responselen);
+        if (e == RIL_E_SUCCESS && response != NULL) {
+            char **strings = (char **)response;
+            int count = responselen / sizeof(char *);
+            ALOGI("  -> [RESP] VOICE_REG: count=%d", count);
+            for (int i = 0; i < count && i < 15; i++) {
+                ALOGI("  -> [RESP] VOICE_REG[%d]=%s", i, strings[i] ? strings[i] : "(null)");
+            }
+        }
+    }
+
+    /* ===== DATA_REGISTRATION_STATE response logging ===== */
+    if (t == g_data_reg_token && g_data_reg_token != NULL) {
+        g_data_reg_token = NULL;
+        ALOGI("  -> [RESP] DATA_REGISTRATION_STATE: e=%d, responselen=%zu", e, responselen);
+        if (e == RIL_E_SUCCESS && response != NULL) {
+            char **strings = (char **)response;
+            int count = responselen / sizeof(char *);
+            ALOGI("  -> [RESP] DATA_REG: count=%d", count);
+            for (int i = 0; i < count && i < 11; i++) {
+                ALOGI("  -> [RESP] DATA_REG[%d]=%s", i, strings[i] ? strings[i] : "(null)");
+            }
+        }
+    }
+
+    /* ===== OPERATOR response logging ===== */
+    if (t == g_operator_token && g_operator_token != NULL) {
+        g_operator_token = NULL;
+        ALOGI("  -> [RESP] OPERATOR: e=%d, responselen=%zu", e, responselen);
+        if (e == RIL_E_SUCCESS && response != NULL) {
+            char **strings = (char **)response;
+            int count = responselen / sizeof(char *);
+            for (int i = 0; i < count && i < 3; i++) {
+                ALOGI("  -> [RESP] OPERATOR[%d]=%s", i, strings[i] ? strings[i] : "(null)");
+            }
+        }
+    }
+
+    /* ===== SIM_IO response logging ===== */
+    if (t == g_sim_io_token && g_sim_io_token != NULL) {
+        g_sim_io_token = NULL;
+        if (e == RIL_E_SUCCESS && response != NULL && responselen >= sizeof(RIL_SIM_IO_Response)) {
+            RIL_SIM_IO_Response *sim_resp = (RIL_SIM_IO_Response *)response;
+            ALOGI("  -> [RESP] SIM_IO: cmd=%d fileid=0x%04X sw1=0x%02X sw2=0x%02X data=%s",
+                  g_sim_io_command, g_sim_io_fileid,
+                  sim_resp->sw1, sim_resp->sw2,
+                  sim_resp->simResponse ? sim_resp->simResponse : "(null)");
+        } else {
+            ALOGI("  -> [RESP] SIM_IO: cmd=%d fileid=0x%04X e=%d (FAILED)", g_sim_io_command, g_sim_io_fileid, e);
+        }
+    }
+
+    g_original_env->OnRequestComplete(t, e, response, responselen);
+
+    if (t == g_radio_power_on_token && g_radio_power_on_token != NULL) {
+        g_radio_power_on_token = NULL;
+        if (e == RIL_E_SUCCESS) {
+            ALOGI("  -> [INJECT] RADIO_POWER(1) complete. Injecting UNSOL_RESPONSE_RADIO_STATE_CHANGED (ON)");
+            int state = 1; // RIL_RADIO_STATE_ON (1)
+            g_original_env->OnUnsolicitedResponse(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, &state, sizeof(state));
+        }
+    }
+}
+
+static void wrapped_OnUnsolicitedResponse(int unsolResponse,
+                                           const void *data, size_t datalen) {
+    ALOGI("  -> [UNSOL] ID: %d", unsolResponse);
+
+    if (unsolResponse == RIL_UNSOL_RESPONSE_VOICE_NETWORK_STATE_CHANGED) {
+        ALOGI("  -> [UNSOL] VOICE_NETWORK_STATE_CHANGED");
+    }
+
+    if (unsolResponse == RIL_UNSOL_RESTRICTED_STATE_CHANGED) {
+        if (data && datalen >= sizeof(int)) {
+            ALOGI("  -> [UNSOL] RESTRICTED_STATE_CHANGED: state=%d", ((int*)data)[0]);
+        }
+    }
+    if (unsolResponse == RIL_UNSOL_NITZ_TIME_RECEIVED) {
+        if (data) {
+            ALOGI("  -> [UNSOL] NITZ_TIME: %s", (char*)data);
+        }
+    }
+
+    if (unsolResponse == RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED) {
+        if (g_faked_radio_off) {
+            ALOGI("  -> Suppressing UNSOL_RESPONSE_RADIO_STATE_CHANGED while faking OFF");
+            return;
+        }
+        ALOGI("  -> UNSOL_RESPONSE_RADIO_STATE_CHANGED forwarded");
+    }
+
+    if (unsolResponse == RIL_UNSOL_RESPONSE_SIM_STATUS_CHANGED) {
+        ALOGI("  -> UNSOL_RESPONSE_SIM_STATUS_CHANGED received");
+    }
+
     g_original_env->OnUnsolicitedResponse(unsolResponse, data, datalen);
 }
 
-static void wrapped_RequestTimedCallback(RIL_TimedCallback callback, void *param, const struct timeval *relativeTime) {
+static void wrapped_RequestTimedCallback(RIL_TimedCallback callback,
+                                          void *param,
+                                          const struct timeval *relativeTime) {
     g_original_env->RequestTimedCallback(callback, param, relativeTime);
 }
 
-static void wrapped_onRequestComplete_for_RIL_Env(RIL_Token t, RIL_Errno e, void *response, size_t responselen) {
+static void wrapped_onRequestComplete_for_RIL_Env(RIL_Token t, RIL_Errno e,
+                                                    void *response,
+                                                    size_t responselen) {
     wrapped_OnRequestComplete(t, e, response, responselen);
 }
 
 static void wrapped_onRequest(int request, void *data, size_t datalen, RIL_Token t) {
-    ALOGI("wrapped_onRequest: request=%d, datalen=%zu", request, datalen);
+    ALOGI("  -> [REQ] ID: %d", request);
+    if (request == RIL_REQUEST_GET_SIM_STATUS) {
+        g_sim_status_token = t;
+        ALOGI("  -> GET_SIM_STATUS sent to real RIL");
+    }
+
+    if (request == RIL_REQUEST_VOICE_REGISTRATION_STATE) {
+        g_voice_reg_token = t;
+        ALOGI("  -> VOICE_REGISTRATION_STATE sent to real RIL");
+    }
+    if (request == RIL_REQUEST_DATA_REGISTRATION_STATE) {
+        g_data_reg_token = t;
+        ALOGI("  -> DATA_REGISTRATION_STATE sent to real RIL");
+    }
+    if (request == RIL_REQUEST_OPERATOR) {
+        g_operator_token = t;
+        ALOGI("  -> OPERATOR sent to real RIL");
+    }
+    if (request == RIL_REQUEST_SIM_IO) {
+        g_sim_io_token = t;
+        if (data && datalen >= sizeof(RIL_SIM_IO_v6)) {
+            RIL_SIM_IO_v6 *sim_io = (RIL_SIM_IO_v6 *)data;
+            g_sim_io_command = sim_io->command;
+            g_sim_io_fileid = sim_io->fileid;
+            ALOGI("  -> SIM_IO: cmd=%d fileid=0x%04X p1=%d p2=%d p3=%d aid=%s",
+                  sim_io->command, sim_io->fileid,
+                  sim_io->p1, sim_io->p2, sim_io->p3,
+                  sim_io->aidPtr ? sim_io->aidPtr : "(null)");
+        }
+    }
+    if (request == RIL_REQUEST_QUERY_AVAILABLE_NETWORKS) {
+        ALOGI("  -> QUERY_AVAILABLE_NETWORKS sent to real RIL");
+    }
+    if (request == RIL_REQUEST_ALLOW_DATA) {
+        if (data && datalen >= sizeof(int)) {
+            ALOGI("  -> ALLOW_DATA: allow=%d", ((int*)data)[0]);
+        }
+    }
+    if (request == RIL_REQUEST_SET_INITIAL_ATTACH_APN) {
+        ALOGI("  -> SET_INITIAL_ATTACH_APN sent to real RIL");
+    }
+
     if (request == RIL_REQUEST_RADIO_POWER) {
         int power_state = ((int *)data)[0];
         ALOGI("  -> RADIO_POWER (%d) sent to real RIL", power_state);
-        
+
         if (power_state == 1) {
-            g_faked_radio_off = 0;
-            g_original_env->OnUnsolicitedResponse(RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED, NULL, 0);
-        } else if (power_state == 0 && g_faked_radio_off) {
-            ALOGI("  -> Faking SUCCESS for RADIO_POWER(false)");
-            g_original_env->OnRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
-            return;
+            g_radio_power_on_token = t;
         }
     }
 
-    if (request == RIL_REQUEST_GET_SIM_STATUS) {
-        ALOGI("  -> GET_SIM_STATUS (11) sent to real RIL");
-        g_get_sim_status_token = t;
+    if (request == RIL_REQUEST_SET_PREFERRED_NETWORK_TYPE) {
+        if (datalen >= sizeof(int)) {
+            int pref = ((int *)data)[0];
+            ALOGI("  -> SET_PREFERRED_NETWORK_TYPE: pref=%d", pref);
+        }
     }
 
     g_original_funcs->onRequest(request, data, datalen, t);
@@ -176,10 +256,7 @@ static void wrapped_onRequest(int request, void *data, size_t datalen, RIL_Token
 
 static RIL_RadioState wrapped_onStateRequest() {
     RIL_RadioState real_state = g_original_funcs->onStateRequest();
-    ALOGI("wrapped_onStateRequest: real_state=%d, g_faked_radio_off=%d", (int)real_state, g_faked_radio_off);
-    if (g_faked_radio_off) {
-        return RADIO_STATE_OFF;
-    }
+    ALOGI("wrapped_onStateRequest: real_state=%d", (int)real_state);
     return real_state;
 }
 
@@ -191,21 +268,41 @@ static void wrapped_onCancel(RIL_Token t) {
     g_original_funcs->onCancel(t);
 }
 
-static const RIL_RadioFunctions g_wrapped_funcs = {
-    1,
-    wrapped_onRequest,
-    wrapped_onStateRequest,
-    wrapped_onSupports,
-    wrapped_onCancel,
-    NULL
-};
+#include <sys/mman.h>
+#include <stdint.h>
+#include <errno.h>
 
-const RIL_RadioFunctions *RIL_Init(const struct RIL_Env *env, int argc, char **argv) {
+static void patch_ret(void *func_ptr, const char *name) {
+    if (!func_ptr) {
+        ALOGW("[HOTPATCH] %s is NULL, skipping", name);
+        return;
+    }
+    uintptr_t addr = (uintptr_t)func_ptr;
+    uintptr_t page_start = addr & ~((uintptr_t)4095);
+    size_t page_size = 4096 * 2;
+
+    if (mprotect((void *)page_start, page_size, PROT_READ | PROT_WRITE | PROT_EXEC) != 0) {
+        ALOGE("[HOTPATCH] mprotect failed for %s at %p: %s", name, func_ptr, strerror(errno));
+        return;
+    }
+
+    volatile uint32_t *code = (volatile uint32_t *)addr;
+    *code = 0xd65f03c0; // ARM64 'ret'
+
+    __builtin___clear_cache((char *)addr, (char *)(addr + 8));
+
+    mprotect((void *)page_start, page_size, PROT_READ | PROT_EXEC);
+    ALOGI("[HOTPATCH] Patched %s at %p with RET (0xd65f03c0) - COEX disabled!", name, func_ptr);
+}
+
+const RIL_RadioFunctions *RIL_Init(const struct RIL_Env *env,
+                                    int argc, char **argv) {
     ALOGI("ril_wrapper RIL_Init called");
-    
+
     g_original_env = env;
-    
+
     struct RIL_Env *custom_env = malloc(sizeof(struct RIL_Env));
+    memset(custom_env, 0, sizeof(struct RIL_Env));
     custom_env->OnRequestComplete = wrapped_onRequestComplete_for_RIL_Env;
     custom_env->OnUnsolicitedResponse = wrapped_OnUnsolicitedResponse;
     custom_env->RequestTimedCallback = wrapped_RequestTimedCallback;
@@ -215,14 +312,32 @@ const RIL_RadioFunctions *RIL_Init(const struct RIL_Env *env, int argc, char **a
         ALOGE("Failed to open real RIL: %s", dlerror());
         return NULL;
     }
-    
-    const RIL_RadioFunctions *(*real_ril_init)(const struct RIL_Env *, int, char **) = dlsym(real_ril, "RIL_Init");
+
+    /* Hotpatch all COEX functions in libril-qc-qmi-1.so to prevent modem coex_qmb.c assertion crashes */
+    patch_ret(dlsym(real_ril, "qcril_qmi_coex_init"), "qcril_qmi_coex_init");
+    patch_ret(dlsym(real_ril, "qcril_qmi_coex_process_rf_band_info"), "qcril_qmi_coex_process_rf_band_info");
+    patch_ret(dlsym(real_ril, "qcril_qmi_coex_initiate_report_lte_info_to_riva"), "qcril_qmi_coex_initiate_report_lte_info_to_riva");
+    patch_ret(dlsym(real_ril, "qcril_qmi_coex_release"), "qcril_qmi_coex_release");
+    patch_ret(dlsym(real_ril, "qcril_qmi_coex_terminate_riva_thread"), "qcril_qmi_coex_terminate_riva_thread");
+
+    const RIL_RadioFunctions *(*real_ril_init)(const struct RIL_Env *, int, char **)
+        = dlsym(real_ril, "RIL_Init");
     if (!real_ril_init) {
         ALOGE("Failed to find RIL_Init in real RIL: %s", dlerror());
         return NULL;
     }
-    
+
     g_original_funcs = real_ril_init(custom_env, argc, argv);
-    
-    return &g_wrapped_funcs;
+
+    if (g_original_funcs) {
+        static RIL_RadioFunctions s_wrapped_funcs;
+        memcpy(&s_wrapped_funcs, g_original_funcs, sizeof(RIL_RadioFunctions));
+        s_wrapped_funcs.onRequest = wrapped_onRequest;
+        s_wrapped_funcs.onStateRequest = wrapped_onStateRequest;
+        s_wrapped_funcs.supports = wrapped_onSupports;
+        s_wrapped_funcs.onCancel = wrapped_onCancel;
+        return &s_wrapped_funcs;
+    }
+
+    return NULL;
 }

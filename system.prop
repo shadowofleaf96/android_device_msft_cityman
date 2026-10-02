@@ -24,11 +24,17 @@ qcom.bluetooth.soc=rome
 bluetooth.enable_timeout_ms=12000
 
 # Camera
-persist.camera.eis.enable=1
+persist.camera.HAL3.enabled=0
 persist.camera.is_type=4
+persist.camera.eis.enable=1
 persist.camera.tnr.preview=0
 persist.camera.tnr.video=0
-persist.camera.HAL3.enabled=1
+persist.camera.continuous.focus=0
+persist.vendor.camera.focus.debug=0
+persist.camera.dropped.flag=0
+persist.camera.zsl.mode=1
+ro.qc.sdk.camera.facialproc=false
+ro.camera.req.force32=true
 ro.camera.notify_nfc=1
 
 # Configstore
@@ -85,6 +91,7 @@ debug.stagefright.omx_default_rank.sw-audio=1
 debug.stagefright.omx_default_rank=0
 vidc.debug.perf.mode=2
 vidc.enc.dcvs.extra-buff-count=2
+media.stagefright.thumbnail.prefer_hw_codecs=1
 media.recorder.show_manufacturer_and_model=true
 persist.media.treble_omx=false
 
@@ -100,12 +107,12 @@ persist.dbg.wfc_avail_ovr=1
 
 # Properties for Surfaceflinger
 debug.sf.use_phase_offsets_as_durations=1
-debug.sf.late.sf.duration=27600000
-debug.sf.late.app.duration=27600000
-debug.sf.early.sf.duration=27600000
-debug.sf.early.app.duration=27600000
-debug.sf.earlyGl.sf.duration=27600000
-debug.sf.earlyGl.app.duration=27600000
+debug.sf.late.sf.duration=5500000
+debug.sf.late.app.duration=15500000
+debug.sf.early.sf.duration=5500000
+debug.sf.early.app.duration=15500000
+debug.sf.earlyGl.sf.duration=5500000
+debug.sf.earlyGl.app.duration=15500000
 
 # RIL
 ro.vendor.extension_library=libqti-perfd-client.so
@@ -147,5 +154,5 @@ persist.audio.calfile2=/vendor/etc/acdbdata/cityman/Cityman_Global_cal.acdb
 persist.audio.calfile3=/vendor/etc/acdbdata/cityman/Cityman_Handset_cal.acdb
 persist.audio.calfile4=/vendor/etc/acdbdata/cityman/Cityman_Hdmi_cal.acdb
 persist.audio.calfile5=/vendor/etc/acdbdata/cityman/Cityman_Headset_cal.acdb
-persist.audio.calfile6=/vendor/etc/acdbdata/cityman/Cityman_Speaker_cal.acdb
-persist.radio.multisim.config=dsds
+# Single SIM device
+persist.radio.multisim.config=ssss

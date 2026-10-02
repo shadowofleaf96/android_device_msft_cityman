@@ -42,7 +42,7 @@ static const char ExifAsciiPrefix[] = { 0x41, 0x53, 0x43, 0x49, 0x49, 0x0, 0x0, 
 static const char ExifUndefinedPrefix[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };   // "\0\0\0\0\0\0\0\0"
 
 #define EXIF_ASCII_PREFIX_SIZE           8   //(sizeof(ExifAsciiPrefix))
-#define FOCAL_LENGTH_DECIMAL_PRECISION   1000
+#define FOCAL_LENGTH_DECIMAL_PRECISION   100
 
 #define CAMERA_MIN_BATCH_COUNT           1
 
@@ -57,7 +57,7 @@ public:
 class QCameraParameters;
 class QCameraReprocScaleParam{
 public:
-    QCameraReprocScaleParam();
+    QCameraReprocScaleParam(QCameraParameters *parent);
     virtual ~QCameraReprocScaleParam();
 
     virtual void setScaleEnable(bool enabled);
@@ -559,6 +559,9 @@ public:
     static const char VIDEO_ROTATION_180[];
     static const char VIDEO_ROTATION_270[];
 
+    //param key for HFR batch size
+    static const char KEY_QC_VIDEO_BATCH_SIZE[];
+
     enum {
         CAMERA_ORIENTATION_UNKNOWN = 0,
         CAMERA_ORIENTATION_PORTRAIT = 1,
@@ -657,6 +660,12 @@ public:
     bool isAutoHDREnabled();
     int32_t stopAEBracket();
     int32_t updateFlash(bool commitSettings);
+    // cityman led:flash_torch: flash mode the HAL must realise itself for the
+    // next still capture (CAM_FLASH_MODE_ON / _AUTO), else CAM_FLASH_MODE_OFF
+    int32_t getLedStrobeMode();
+    // true while updateFlash keeps led:flash_torch on for flash-mode torch
+    bool isLedTorchLit() {return m_bLedTorchOnly &&
+            (mFlashDaemonValue == CAM_FLASH_MODE_TORCH);};
     int32_t updateRAW(cam_dimension_t max_dim);
     bool isAVTimerEnabled();
     bool isDISEnabled();
@@ -664,6 +673,7 @@ public:
     uint8_t getMobicatMask();
 
     cam_focus_mode_type getFocusMode() const {return mFocusMode;};
+    bool isAFRunning();
     int32_t setNumOfSnapshot();
     int32_t adjustPreviewFpsRange(cam_fps_range_t *fpsRange);
     bool isJpegPictureFormat() {return (mPictureFormat == CAM_FORMAT_JPEG);};
@@ -774,7 +784,8 @@ public:
             { return m_captureFrameConfig; };
     void setJpegRotation(int rotation);
     uint32_t getJpegRotation() { return mJpegRotation;};
-
+    void setFocusState(cam_autofocus_state_t focusState) { mFocusState = focusState; };
+    cam_autofocus_state_t getFocusState() { return mFocusState; };
 private:
     int32_t setPreviewSize(const QCameraParameters& );
     int32_t setVideoSize(const QCameraParameters& );
@@ -1038,6 +1049,11 @@ private:
     bool m_bAeBracketingEnabled;
     int32_t mFlashValue;
     int32_t mFlashDaemonValue;
+    // backend reports no flash but the board has a led:flash_torch GPIO LED:
+    // flash-mode is off/auto/on/torch, all driven from the HAL (QCameraTorch).
+    // torch: updateFlash keeps the LED on. on/auto: QCamera2HWI strobes the
+    // LED around the still capture (ledStrobeStart / ledStrobeStop).
+    bool m_bLedTorchOnly;
     int32_t mHfrMode;
     bool m_bHDRModeSensor;
     bool mOfflineRAW;
@@ -1058,6 +1074,7 @@ private:
 
     uint32_t mRotation;
     uint32_t mJpegRotation;
+    cam_autofocus_state_t mFocusState;
 };
 
 }; // namespace qcamera

@@ -1,0 +1,25 @@
+// cityman Vulkan 1.0 GPU-write proof: vkCmdClearColorImage + host copy.
+// Command-line native. Not in PRODUCT_PACKAGES. Does not enable HWUI Vulkan.
+
+cc_binary {
+    name: "cityman-vk-clear",
+    srcs: ["main.c"],
+    vendor: false,
+    proprietary: false,
+    compile_multilib: "64",
+
+    shared_libs: [
+        "liblog",
+        "libvulkan",
+    ],
+
+    header_libs: [
+        "vulkan_headers",
+    ],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-DLOG_TAG=\"citymanVkClear\"",
+    ],
+}

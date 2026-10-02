@@ -1,0 +1,24 @@
+// Identical to hardware/interfaces/health/2.1/default except that the
+// healthd_config is pinned to the qpnp-fg node before BatteryMonitor::init()
+// runs. See HealthImpl.cpp for why the stock config cannot find charge_full,
+// charge_full_design or cycle_count on this PMIC pair.
+//
+// stem keeps the "android.hardware.health@2.0-impl" prefix that
+// PassthroughServiceManager::openLibs() scans for, and overrides the stock
+// -impl so only one implementation lands in /vendor/lib*/hw.
+cc_library_shared {
+    name: "android.hardware.health@2.1-impl-cityman",
+    stem: "android.hardware.health@2.0-impl-2.1-cityman",
+    overrides: ["android.hardware.health@2.1-impl"],
+
+    proprietary: true,
+    recovery_available: true,
+
+    defaults: ["android.hardware.health@2.1-impl-defaults"],
+
+    srcs: [
+        "HealthImpl.cpp",
+    ],
+
+    // No vintf_fragments: android.hardware.health@2.1-service ships it.
+}

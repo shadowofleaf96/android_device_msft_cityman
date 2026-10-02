@@ -1,0 +1,42 @@
+// cityman Vulkan 1.0 present APK (own SurfaceView, not SystemUI BLAST).
+// Build: mka cityman-vk-present
+// Do NOT add this to cityman-vulkan.mk from this directory (other agent).
+// Other agent may add one line:
+//     cityman-vk-present
+// HWUI stays GLES. Do not set ro.hwui.use_vulkan.
+
+cc_library_shared {
+    name: "libcityman-vk-present",
+    srcs: ["jni/vk_present.c"],
+    shared_libs: [
+        "libandroid",
+        "liblog",
+        "libvulkan",
+    ],
+    stl: "none",
+    sdk_version: "current",
+    compile_multilib: "64",
+    installable: false,
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-DLOG_TAG=\"citymanVkPresent\"",
+        "-DVK_USE_PLATFORM_ANDROID_KHR",
+    ],
+}
+
+android_app {
+    name: "cityman-vk-present",
+    srcs: ["src/**/*.java"],
+    manifest: "AndroidManifest.xml",
+    jni_libs: ["libcityman-vk-present"],
+    compile_multilib: "64",
+    sdk_version: "current",
+    use_embedded_native_libs: true,
+    optimize: {
+        enabled: false,
+    },
+    dex_preopt: {
+        enabled: false,
+    },
+}

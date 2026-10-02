@@ -19,6 +19,7 @@ import /vendor/etc/init/hw/init.cityman.diag.rc
 import /vendor/etc/init/hw/init.cityman.ramdump.rc
 import /vendor/etc/init/hw/init.cityman.misc.rc
 import /vendor/etc/init/hw/init.cityman.sensors.rc
+import /vendor/etc/init/hw/init.cityman.camera.rc
 
 on early-init
     mount debugfs debugfs /sys/kernel/debug
@@ -29,7 +30,8 @@ on early-init
     
     # Flashlight sysfs permission fix
 on boot
-    chmod 0666 /sys/class/leds/led::flash_torch/brightness
+    chmod 0666 /sys/class/leds/led:flash_torch/brightness
+    rm /dev/smd_cxm_qmi
 
 on charger
     # low power governing
@@ -63,8 +65,6 @@ on property:sys.boot_completed=1
     write /sys/block/dm-1/queue/read_ahead_kb 128
     write /sys/block/dm-2/queue/read_ahead_kb 128
     write /sys/block/mmcblk0/queue/iostats 1
-
-    restart cameraserver
 
 on init
 
@@ -120,6 +120,15 @@ on boot
     write /dev/cpuset/system-background/cpus 0-2
     write /dev/cpuset/restricted/cpus 0-1
     write /dev/cpuset/top-app/cpus 0-5
+
+    # Create camera-daemon cpuset
+    mkdir /dev/cpuset/camera-daemon
+    copy /dev/cpuset/cpus /dev/cpuset/camera-daemon/cpus
+    copy /dev/cpuset/mems /dev/cpuset/camera-daemon/mems
+    chown system system /dev/cpuset/camera-daemon
+    chown system system /dev/cpuset/camera-daemon/tasks
+    chmod 0664 /dev/cpuset/camera-daemon/tasks
+    write /dev/cpuset/camera-daemon/cpus 0-5
 
     # Bluetooth
     chown bluetooth net_bt /sys/class/rfkill/rfkill0/type
@@ -258,9 +267,6 @@ on post-fs-data
     chown radio radio /data/misc/radio/qcril.db
     chmod 0600 /data/misc/radio/qcril.db
 
-    # Create folder for mm-qcamera-daemon
-    mkdir /data/misc/camera 0770 camera camera
-
     # change permission for ldaf
     chown input system /persist/calibration
     chmod 0650 /persist/calibration
@@ -344,6 +350,12 @@ service netmgrd /vendor/bin/netmgrd
     class main
     group radio system wakelock
 
+service lumia-modem-init /vendor/bin/lumia-modem-init
+    class main
+    user root
+    group radio system wakelock
+    oneshot
+
 service per_mgr /vendor/bin/pm-service
     class core
     user system
@@ -373,12 +385,21 @@ on property:ro.boot.hardware.sku=LGH791F
 on property:ro.boot.hardware.sku=LGH798
     setprop ro.boot.wificountrycode 00
 
+# Sockets are 0666 (QC init_thermal-engine.rc). The QCamera2 HAL runs inside
+# cameraserver (uid cameraserver, groups audio camera input drmrpc), and
+# libthermalclient's listener thread connect()s to thermal-recv-client. With
+# 0660 system:system that connect fails with EACCES, the thread retries with
+# sleep(5), and thermal_client_unregister_callback() pthread_join()s it, so
+# every closeCamera() stalled 5s ("Unregisteration ... handle:2" 5s after
+# handle:1). cameraserver needed 2 open/close cycles before publishing
+# ICameraService, so it was unreachable for >10s after each start.
+
 service thermal-engine /vendor/bin/thermal-engine
     class main
     user root
-    socket thermal-send-client stream 0660 system system
-    socket thermal-recv-client stream 0660 system system
-    socket thermal-recv-passive-client stream 0660 system system
+    socket thermal-send-client stream 0666 system system
+    socket thermal-recv-client stream 0666 system system
+    socket thermal-recv-passive-client stream 0666 system system
     group root radio system
 
 service loc_launcher /vendor/bin/loc_launcher
@@ -406,13 +427,6 @@ service charger /charger
     critical
     seclabel u:r:charger:s0
 
-service qcamerasvr /vendor/bin/mm-qcamera-daemon
-    class late_start
-    user camera
-    group camera system inet input graphics
-    writepid /dev/cpuset/system-background/tasks
-
-
 #on property:ro.debuggable=1
 #    start ss_ramdump
 
@@ -423,9 +437,8 @@ service ss_ramdump /vendor/bin/subsystem_ramdump
     disabled
 
 service cnd /vendor/bin/cnd
-    class late_start
-    socket cnd stream 660 root inet
-    group root wakelock
+    user root
+    disabled
 
 service imsqmidaemon /vendor/bin/imsqmidaemon
     class main
@@ -465,14 +478,5 @@ service devstart_sh /vendor/bin/init.qcom.devstart.sh
 
 on property:apexd.status=ready
     mount none /system/etc/swcodec/ld.config.txt /apex/com.android.media.swcodec/etc/ld.config.txt bind
-
-on property:init.svc.media=restarting
-    restart qcamerasvr
-
-on property:init.svc.servicemanager=restarting
-    restart qcamerasvr
-    
-on property:vold.decrypt=trigger_restart_framework
-    restart camera-provider-2-4
 
 

@@ -95,6 +95,7 @@
 /vendor/bin/rmt_storage            u:object_r:rmt_exec:s0
 /vendor/bin/qmuxd                  u:object_r:qmux_exec:s0
 /vendor/bin/netmgrd                u:object_r:netmgrd_exec:s0
+/vendor/bin/lumia-modem-init       u:object_r:rild_exec:s0
 /vendor/bin/irsc_util              u:object_r:irsc_util_exec:s0
 /vendor/bin/pm-service             u:object_r:per_mgr_exec:s0
 /vendor/bin/pm-proxy               u:object_r:per_mgr_exec:s0
