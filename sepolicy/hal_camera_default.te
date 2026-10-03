@@ -12,3 +12,8 @@ vndbinder_use(hal_camera_default);
 #binder_call(hal_camera_default, hal_graphics_composer)
 #binder_call(hal_camera_default, system_server)
 binder_call(hal_camera_default, servicemanager)
+
+# GPIO torch LED – QCameraTorch reads/writes /sys/class/leds/led:flash_torch/brightness
+allow hal_camera_default sysfs_leds:dir search;
+allow hal_camera_default sysfs_leds:lnk_file read;
+allow hal_camera_default sysfs_leds:file rw_file_perms;

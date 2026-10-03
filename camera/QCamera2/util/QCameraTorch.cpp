@@ -41,6 +41,12 @@ static const char TORCH_BRIGHTNESS[] =
         "/sys/class/leds/led:flash_torch/brightness";
 static const char TORCH_MAX_BRIGHTNESS[] =
         "/sys/class/leds/led:flash_torch/max_brightness";
+static const char GPIO_TORCH_VALUE[] =
+        "/sys/class/gpio/gpio12/value";
+static const char GPIO_TORCH_DIR[] =
+        "/sys/class/gpio/gpio12/direction";
+static const char GPIO_EXPORT[] =
+        "/sys/class/gpio/export";
 
 static int readInt(const char *path, int def)
 {
@@ -57,43 +63,95 @@ static int readInt(const char *path, int def)
     return atoi(buf);
 }
 
+static bool ensureGpioExported()
+{
+    if (access(GPIO_TORCH_VALUE, W_OK) == 0) {
+        return true;
+    }
+    if (access(GPIO_EXPORT, W_OK) == 0) {
+        int fd = open(GPIO_EXPORT, O_WRONLY | O_CLOEXEC);
+        if (fd >= 0) {
+            write(fd, "12\n", 3);
+            close(fd);
+        }
+    }
+    if (access(GPIO_TORCH_DIR, W_OK) == 0) {
+        int fd = open(GPIO_TORCH_DIR, O_WRONLY | O_CLOEXEC);
+        if (fd >= 0) {
+            write(fd, "out\n", 4);
+            close(fd);
+        }
+    }
+    return access(GPIO_TORCH_VALUE, W_OK) == 0;
+}
+
 bool QCameraTorch::hasTorch()
 {
-    if (access(TORCH_BRIGHTNESS, W_OK) != 0) {
-        ALOGV("%s: %s not writable: %s", __func__, TORCH_BRIGHTNESS,
-                strerror(errno));
-        return false;
+    if (access(TORCH_BRIGHTNESS, W_OK) == 0 && readInt(TORCH_MAX_BRIGHTNESS, 0) > 0) {
+        return true;
     }
-    return readInt(TORCH_MAX_BRIGHTNESS, 0) > 0;
+    if (ensureGpioExported()) {
+        return true;
+    }
+    return false;
 }
 
 int32_t QCameraTorch::setTorch(bool on)
 {
-    char buf[16];
-    int level = on ? readInt(TORCH_MAX_BRIGHTNESS, 255) : 0;
-    int fd = open(TORCH_BRIGHTNESS, O_WRONLY | O_CLOEXEC);
-    if (fd < 0) {
-        int err = errno;
-        ALOGE("%s: open %s failed: %s", __func__, TORCH_BRIGHTNESS,
-                strerror(err));
-        return -err;
+    if (access(TORCH_BRIGHTNESS, W_OK) == 0) {
+        char buf[16];
+        int level = on ? readInt(TORCH_MAX_BRIGHTNESS, 255) : 0;
+        int fd = open(TORCH_BRIGHTNESS, O_WRONLY | O_CLOEXEC);
+        if (fd < 0) {
+            int err = errno;
+            ALOGE("%s: open %s failed: %s", __func__, TORCH_BRIGHTNESS,
+                    strerror(err));
+            return -err;
+        }
+        int len = snprintf(buf, sizeof(buf), "%d\n", level);
+        ssize_t n = write(fd, buf, len);
+        int err = (n < 0) ? errno : 0;
+        close(fd);
+        if (n < 0) {
+            ALOGE("%s: write %s failed: %s", __func__, TORCH_BRIGHTNESS,
+                    strerror(err));
+            return -err;
+        }
+        ALOGI("%s: led:flash_torch brightness=%d", __func__, level);
+        return 0;
     }
-    int len = snprintf(buf, sizeof(buf), "%d\n", level);
-    ssize_t n = write(fd, buf, len);
-    int err = (n < 0) ? errno : 0;
-    close(fd);
-    if (n < 0) {
-        ALOGE("%s: write %s failed: %s", __func__, TORCH_BRIGHTNESS,
-                strerror(err));
-        return -err;
+
+    if (ensureGpioExported()) {
+        int fd = open(GPIO_TORCH_VALUE, O_WRONLY | O_CLOEXEC);
+        if (fd < 0) {
+            int err = errno;
+            ALOGE("%s: open %s failed: %s", __func__, GPIO_TORCH_VALUE,
+                    strerror(err));
+            return -err;
+        }
+        const char *val = on ? "1\n" : "0\n";
+        ssize_t n = write(fd, val, strlen(val));
+        int err = (n < 0) ? errno : 0;
+        close(fd);
+        if (n < 0) {
+            ALOGE("%s: write %s failed: %s", __func__, GPIO_TORCH_VALUE,
+                    strerror(err));
+            return -err;
+        }
+        ALOGI("%s: gpio12 value=%s", __func__, on ? "1" : "0");
+        return 0;
     }
-    ALOGI("%s: led:flash_torch brightness=%d", __func__, level);
-    return 0;
+
+    ALOGE("%s: no torch interface available", __func__);
+    return -ENOSYS;
 }
 
 bool QCameraTorch::isTorchOn()
 {
-    return readInt(TORCH_BRIGHTNESS, 0) > 0;
+    if (access(TORCH_BRIGHTNESS, R_OK) == 0) {
+        return readInt(TORCH_BRIGHTNESS, 0) > 0;
+    }
+    return readInt(GPIO_TORCH_VALUE, 0) > 0;
 }
 
 }; // namespace qcamera

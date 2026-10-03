@@ -36,6 +36,9 @@ Device tree and hardware support for the Microsoft Lumia 950 XL (`cityman`) powe
   - Bluetooth 4.1 (Qualcomm Rome SoC).
   - NFC (NXP PN547 stack).
   - USB Type-C MTP file transfer and Rooted ADB debugging.
+- **Flashlight / Torch**:
+  - Quick Settings flashlight tile fully operational (toggle on/off).
+  - Driven via GPIO 12 (`led:flash_torch` sysfs with fallback) and HAL metadata reporting.
 - **Power & Battery**:
   - 13W USB Fast Charging with safety timer protections.
   - Precise battery fuel gauge reporting for Microsoft BV-T4D 3340mAh battery via PMI8994.
@@ -59,7 +62,6 @@ Device tree and hardware support for the Microsoft Lumia 950 XL (`cityman`) powe
   - Rear Camera (20MP PureView Sony IMX230): Sensor initializes and binds to ISP, but viewfinder shows a black preview.
   - Front-Facing Camera: Not working.
   - Iris Scanner: Not working.
-  - Flashlight / Torch: Not working (Quick Settings tile is greyed out showing "Camera in use").
 - **VoLTE / VoWiFi**: Carrier-specific IMS profile customization (standard Circuit-Switched Fallback handles 2G/3G voice calls reliably).
 
 ---

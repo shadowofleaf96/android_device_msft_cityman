@@ -31,6 +31,10 @@ on early-init
     # Flashlight sysfs permission fix
 on boot
     chmod 0666 /sys/class/leds/led:flash_torch/brightness
+    # Fallback when leds-gpio driver is not present in running kernel
+    write /sys/class/gpio/export 12
+    write /sys/class/gpio/gpio12/direction out
+    chmod 0666 /sys/class/gpio/gpio12/value
     rm /dev/smd_cxm_qmi
 
 on charger

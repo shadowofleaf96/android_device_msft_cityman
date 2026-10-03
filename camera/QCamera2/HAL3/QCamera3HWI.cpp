@@ -50,6 +50,7 @@
 #include "QCamera3PostProc.h"
 #include "QCamera3VendorTags.h"
 #include "QCamera2Factory.h"
+#include "QCameraTorch.h"
 #include <cutils/properties.h>
 
 using namespace android;
@@ -5245,7 +5246,7 @@ int QCamera3HardwareInterface::initStaticMetadata(uint32_t cameraId)
             available_flash_levels, count);
 
     uint8_t flashAvailable;
-    if (gCamCapability[cameraId]->flash_available)
+    if (gCamCapability[cameraId]->flash_available || QCameraTorch::hasTorch())
         flashAvailable = ANDROID_FLASH_INFO_AVAILABLE_TRUE;
     else
         flashAvailable = ANDROID_FLASH_INFO_AVAILABLE_FALSE;
