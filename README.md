@@ -74,4 +74,4 @@ Device tree and hardware support for the Microsoft Lumia 950 XL (`cityman`) powe
 
 - **EpicLPer**: Heavy lifting in porting the TAS2552/3 speaker amplifier driver, Quaternary MI2S layout, and initial Sensors/NFC research for the Lumia 950 series.
 - **LineageOS & CAF**: Base Android 11 bringup and MSM8994 audio/display HAL infrastructure.
-- **LumiaWOA & Lumia Community**: Hardware documentation, ACPI tables, and schematics.
+- **Android4Lumia950 & Lumia Community**: Hardware documentation, ACPI tables, and schematics.
