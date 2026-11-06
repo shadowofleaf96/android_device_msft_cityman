@@ -13,17 +13,14 @@ on post-fs-data
 on boot
     start qcamerasvr
 
-# No 'restart cameraserver' on boot_completed (see init.cityman.rc): the
-# boot-time cameraserver already has camera 0; the restart only created a
-# window with no ICameraService that crashed Snap on an empty camera list.
 on property:sys.boot_completed=1
-    restart qcamerasvr
     restart cameraserver
 
 service qcamerasvr /vendor/bin/mm-qcamera-daemon
     class main
     user camera
     group camera system inet input graphics
+    setenv LD_PRELOAD /vendor/lib/libcutils_shim.so
     writepid /dev/cpuset/system-background/tasks
 
 on property:init.svc.media=restarting

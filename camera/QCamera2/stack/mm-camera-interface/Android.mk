@@ -16,6 +16,7 @@ endif
 
 LOCAL_CFLAGS += -D_ANDROID_
 
+
 LOCAL_C_INCLUDES := \
     $(LOCAL_PATH)/inc \
     $(LOCAL_PATH)/../common \
@@ -30,6 +31,6 @@ LOCAL_HEADER_LIBRARIES := generated_kernel_headers
 LOCAL_SHARED_LIBRARIES := libdl libcutils liblog
 LOCAL_MODULE_TAGS := optional
 LOCAL_VENDOR_MODULE := true
-# mm-qcamera-daemon is ARM32; HAL must match BOARD_QTI_CAMERA_32BIT_ONLY.
-LOCAL_32_BIT_ONLY := $(BOARD_QTI_CAMERA_32BIT_ONLY)
+
+LOCAL_32_BIT_ONLY := true
 include $(BUILD_SHARED_LIBRARY)

@@ -75,10 +75,10 @@
 <!ATTLIST AudioDecoderCap enabled (true|false) #REQUIRED>
 ]>
 <!--
-     Cityman camcorder: rear IMX230 + MSM8992 VFE44 / Venus.
+     Cityman camcorder: rear IMX230 + MSM8994 VFE46 / Venus (kinzie stack).
      Capture ceiling 3840x2160@30 (4K30). Not Spectra 4K60. Not HEVC encode
      (no OMX.qcom.video.encoder.hevc in media_codecs.xml).
-     Rear stills from Carrera ES1 IMX230 modes. No cameraId=1: front die
+     Rear stills from IMX230 modes. No cameraId=1: front die
      is unnamed SMIApp; do not invent FFC sizes.
 -->
 <MediaSettings>

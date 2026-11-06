@@ -16,7 +16,7 @@
     <ChromatixName>mot_imx230</ChromatixName>
     <ModesSupported>1</ModesSupported>
     <Position>BACK</Position>
-    <MountAngle>90</MountAngle>
+    <MountAngle>270</MountAngle>
     <CSIInfo>
       <CSIDCore>0</CSIDCore>
       <LaneMask>0x1F</LaneMask>

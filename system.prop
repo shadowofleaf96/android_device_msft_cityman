@@ -17,6 +17,8 @@ persist.audio.fluence.speaker=true
 ro.config.vc_call_vol_steps=7
 af.fast_track_multiplier=1
 audio_hal.period_size=192
+audio_hal.period_count=1
+
 ro.audio.flinger_standbytime_ms=300
 
 # Bluetooth
@@ -25,16 +27,19 @@ bluetooth.enable_timeout_ms=12000
 
 # Camera
 persist.camera.HAL3.enabled=0
-persist.camera.is_type=4
-persist.camera.eis.enable=1
+persist.camera.is_type=0
+persist.camera.eis.enable=0
 persist.camera.tnr.preview=0
 persist.camera.tnr.video=0
-persist.camera.continuous.focus=0
+persist.camera.continuous.focus=1
 persist.vendor.camera.focus.debug=0
 persist.camera.dropped.flag=0
-persist.camera.zsl.mode=1
+persist.camera.zsl.mode=0
 ro.qc.sdk.camera.facialproc=false
+ro.camera.preview.format=nv21
 ro.camera.req.force32=true
+persist.camera.gyro.android=0
+persist.camera.ois.disable=1
 ro.camera.notify_nfc=1
 
 # Configstore
@@ -53,15 +58,14 @@ ro.build.fingerprint=google/redfin/redfin:11/RQ3A.211001.001/7641976:user/releas
 ro.build.tags=release-keys
 ro.product.brand=google
 ro.product.manufacturer=Google
-ro.product.model=Pixel 5
+ro.product.model=Lumia 950 XL
 ro.product.name=redfin
 ro.product.device=redfin
 
-
 # Dalvik
-dalvik.vm.boot-dex2oat-threads=4
-dalvik.vm.dex2oat-threads=4
-dalvik.vm.image-dex2oat-threads=4
+dalvik.vm.boot-dex2oat-threads=6
+dalvik.vm.dex2oat-threads=6
+dalvik.vm.image-dex2oat-threads=6
 ro.hwui.texture_cache_size=56
 ro.hwui.layer_cache_size=32
 ro.hwui.r_buffer_cache_size=8
@@ -89,12 +93,6 @@ persist.hwc.mdpcomp.enable=true
 # DRM
 drm.service.enabled=true
 
-# Faceunlock
-ro.facelock.black_timeout=700
-ro.facelock.det_timeout=2500
-ro.facelock.rec_timeout=3500
-ro.facelock.est_max_time=600
-
 # FRP
 ro.frp.pst=/dev/block/platform/soc.0/f9824900.sdhci/by-name/persistent
 
@@ -111,11 +109,11 @@ persist.media.treble_omx=false
 ro.min_freq_0=384000
 ro.min_freq_4=384000
 
-# IMS
-persist.dbg.ims_volte_enable=1
-persist.dbg.volte_avail_ovr=1
-persist.dbg.vt_avail_ovr=1
-persist.dbg.wfc_avail_ovr=1
+# IMS (Disabled - Cityman on Maroc Telecom uses CSFB for voice calls)
+persist.dbg.ims_volte_enable=0
+persist.dbg.volte_avail_ovr=0
+persist.dbg.vt_avail_ovr=0
+persist.dbg.wfc_avail_ovr=0
 
 # Properties for Surfaceflinger
 debug.sf.use_phase_offsets_as_durations=1
@@ -134,23 +132,20 @@ persist.qcril.disable_retry=true
 persist.radio.always_send_plmn=true
 ro.telephony.call_ring.multiple=0
 persist.radio.use_cc_names=true
-persist.radio.eri64_as_home=1
 persist.radio.data_con_rprt=true
-persist.radio.rat_on=combine
 persist.radio.data_ltd_sys_ind=1
-persist.radio.calls.on.ims=1
+persist.radio.calls.on.ims=0
 persist.radio.apm_sim_not_pwdn=1
 persist.radio.custom_ecc=1
 persist.radio.data_no_toggle=1
 persist.radio.process_sups_ind=1
 ro.telephony.default_network=9
-#telephony.lteOnCdmaDevice=1
-persist.radio.mode_pref_nv10=0
 ril.nosim.ecc_list_count=1
 ril.nosim.ecc_list_1=111,113,117,122,125
 persist.radio.redir_party_num=0
 
 #disable FUSE storage on Android 11
+persist.sys.fuse=false
 persist.sys.fflag.override.settings_fuse=false
 persist.sys.fuse.passthrough.enable=false
 persist.sys.isolated_storage=false
@@ -166,5 +161,6 @@ persist.audio.calfile2=/vendor/etc/acdbdata/cityman/Cityman_Global_cal.acdb
 persist.audio.calfile3=/vendor/etc/acdbdata/cityman/Cityman_Handset_cal.acdb
 persist.audio.calfile4=/vendor/etc/acdbdata/cityman/Cityman_Hdmi_cal.acdb
 persist.audio.calfile5=/vendor/etc/acdbdata/cityman/Cityman_Headset_cal.acdb
+
 # Single SIM device
 persist.radio.multisim.config=ssss

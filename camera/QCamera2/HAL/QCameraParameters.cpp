@@ -39,7 +39,6 @@
 #include <sys/sysinfo.h>
 #include "QCamera2HWI.h"
 #include "QCameraParameters.h"
-#include "QCameraTorch.h"
 
 #define ASPECT_TOLERANCE 0.001
 
@@ -289,6 +288,7 @@ const char QCameraParameters::ISO_400[] = "ISO400";
 const char QCameraParameters::ISO_800[] = "ISO800";
 const char QCameraParameters::ISO_1600[] = "ISO1600";
 const char QCameraParameters::ISO_3200[] = "ISO3200";
+const char QCameraParameters::ISO_6400[] = "ISO6400";
 const char QCameraParameters::ISO_MANUAL[] = "manual";
 
 
@@ -634,7 +634,8 @@ const QCameraParameters::QCameraMap<cam_iso_mode_type>
     { ISO_400,   CAM_ISO_MODE_400 },
     { ISO_800,   CAM_ISO_MODE_800 },
     { ISO_1600,  CAM_ISO_MODE_1600 },
-    { ISO_3200,  CAM_ISO_MODE_3200 }
+    { ISO_3200,  CAM_ISO_MODE_3200 },
+    { ISO_6400,  CAM_ISO_MODE_6400 }
 };
 
 const QCameraParameters::QCameraMap<cam_hfr_mode_t>
@@ -827,7 +828,6 @@ QCameraParameters::QCameraParameters()
       m_bAeBracketingEnabled(false),
       mFlashValue(CAM_FLASH_MODE_OFF),
       mFlashDaemonValue(CAM_FLASH_MODE_OFF),
-      m_bLedTorchOnly(false),
       mHfrMode(CAM_HFR_MODE_OFF),
       m_bHDRModeSensor(true),
       mOfflineRAW(false),
@@ -931,7 +931,6 @@ QCameraParameters::QCameraParameters(const String8 &params)
     m_bAeBracketingEnabled(false),
     mFlashValue(CAM_FLASH_MODE_OFF),
     mFlashDaemonValue(CAM_FLASH_MODE_OFF),
-    m_bLedTorchOnly(false),
     mHfrMode(CAM_HFR_MODE_OFF),
     m_bHDRModeSensor(true),
     mOfflineRAW(false),
@@ -1954,10 +1953,17 @@ int32_t QCameraParameters::setPreviewFpsRange(const QCameraParameters& params)
             goto end;
         }
     }
+#ifdef VENDOR_EDIT
+    for(size_t i = 0; i < m_pCapability->hal3_fps_ranges_tbl_cnt; i++) {
+        // if the value is in the supported list
+        if (minFps >= m_pCapability->hal3_fps_ranges_tbl[i].min_fps * 1000 &&
+                maxFps <= m_pCapability->hal3_fps_ranges_tbl[i].max_fps * 1000) {
+#else
     for(size_t i = 0; i < m_pCapability->fps_ranges_tbl_cnt; i++) {
         // if the value is in the supported list
         if (minFps >= m_pCapability->fps_ranges_tbl[i].min_fps * 1000 &&
                 maxFps <= m_pCapability->fps_ranges_tbl[i].max_fps * 1000) {
+#endif
             found = true;
             CDBG_HIGH("%s: FPS i=%d : minFps = %d, maxFps = %d"
                     " vidMinFps = %d, vidMaxFps = %d",
@@ -4786,6 +4792,32 @@ int32_t QCameraParameters::initDefaultParameters()
     set(KEY_JPEG_THUMBNAIL_QUALITY, 85);
 
     // Set FPS ranges
+#ifdef VENDOR_EDIT
+    if (m_pCapability->hal3_fps_ranges_tbl_cnt > 0 &&
+        m_pCapability->hal3_fps_ranges_tbl_cnt <= MAX_SIZES_CNT) {
+        int default_fps_index = 0;
+        String8 fpsRangeValues = createFpsRangeString(m_pCapability->hal3_fps_ranges_tbl,
+                                                      m_pCapability->hal3_fps_ranges_tbl_cnt,
+                                                      default_fps_index);
+        set(KEY_SUPPORTED_PREVIEW_FPS_RANGE, fpsRangeValues.string());
+
+        int min_fps =
+            int(m_pCapability->hal3_fps_ranges_tbl[default_fps_index].min_fps * 1000);
+        int max_fps =
+            int(m_pCapability->hal3_fps_ranges_tbl[default_fps_index].max_fps * 1000);
+        m_default_fps_range = m_pCapability->hal3_fps_ranges_tbl[default_fps_index];
+        //Set video fps same as preview fps
+        setPreviewFpsRange(min_fps, max_fps, min_fps, max_fps);
+
+        // Set legacy preview fps
+        String8 fpsValues = createFpsString(m_pCapability->hal3_fps_ranges_tbl[default_fps_index]);
+        set(KEY_SUPPORTED_PREVIEW_FRAME_RATES, fpsValues.string());
+        CDBG_HIGH("%s: supported fps rates: %s", __func__, fpsValues.string());
+        CameraParameters::setPreviewFrameRate(int(m_pCapability->hal3_fps_ranges_tbl[default_fps_index].max_fps));
+    } else {
+        ALOGE("%s: supported fps ranges cnt is 0 or exceeds max!!!", __func__);
+    }
+#else
     if (m_pCapability->fps_ranges_tbl_cnt > 0 &&
         m_pCapability->fps_ranges_tbl_cnt <= MAX_SIZES_CNT) {
         int default_fps_index = 0;
@@ -4811,6 +4843,7 @@ int32_t QCameraParameters::initDefaultParameters()
         ALOGE("%s: supported fps ranges cnt is 0 or exceeds max!!!", __func__);
     }
 
+#endif
     // Set supported focus modes
     if (m_pCapability->supported_focus_modes_cnt > 0) {
         String8 focusModeValues = createValuesString(
@@ -4992,36 +5025,8 @@ int32_t QCameraParameters::initDefaultParameters()
     set(KEY_QC_SUPPORTED_MANUAL_WB_MODES, manualWBModes.string());
 
     // Set Flash mode
-    if(m_pCapability->supported_flash_modes_cnt > 0) {
-       String8 flashValues = createValuesString(
-               m_pCapability->supported_flash_modes,
-               m_pCapability->supported_flash_modes_cnt,
-               FLASH_MODES_MAP,
-               PARAM_MAP_SIZE(FLASH_MODES_MAP));
-       set(KEY_SUPPORTED_FLASH_MODES, flashValues);
-       setFlash(FLASH_MODE_OFF);
-    } else if (QCameraTorch::hasTorch()) {
-        // No flash driver in mm-camera, but the board has a GPIO torch LED.
-        // Advertise off/auto/on/torch so cameraserver sees a flash unit
-        // (android.flash.info.available). torch is driven from updateFlash;
-        // on/auto are a software strobe around the still capture in
-        // QCamera2HardwareInterface::ledStrobeStart (auto decides from the
-        // AEC exposure/ISO the daemon reports in preview metadata).
-        m_bLedTorchOnly = true;
-        String8 flashValues(FLASH_MODE_OFF);
-        flashValues.append(",");
-        flashValues.append(FLASH_MODE_AUTO);
-        flashValues.append(",");
-        flashValues.append(FLASH_MODE_ON);
-        flashValues.append(",");
-        flashValues.append(FLASH_MODE_TORCH);
-        set(KEY_SUPPORTED_FLASH_MODES, flashValues);
-        setFlash(FLASH_MODE_OFF);
-        ALOGI("%s: backend has no flash, using led:flash_torch (%s)",
-                __func__, flashValues.string());
-    } else {
-        ALOGE("%s: supported flash modes cnt is 0!!!", __func__);
-    }
+    set(KEY_SUPPORTED_FLASH_MODES, "off,auto,on,torch");
+    setFlash(FLASH_MODE_OFF);
 
     // Set Scene Mode
     String8 sceneModeValues = createValuesString(
@@ -5029,6 +5034,12 @@ int32_t QCameraParameters::initDefaultParameters()
             m_pCapability->supported_scene_modes_cnt,
             SCENE_MODES_MAP,
             PARAM_MAP_SIZE(SCENE_MODES_MAP));
+    if (!strstr(sceneModeValues.string(), SCENE_MODE_HDR)) {
+        if (!sceneModeValues.isEmpty()) {
+            sceneModeValues.append(",");
+        }
+        sceneModeValues.append(SCENE_MODE_HDR);
+    }
     set(KEY_SUPPORTED_SCENE_MODES, sceneModeValues);
     setSceneMode(SCENE_MODE_AUTO);
 
@@ -5206,6 +5217,10 @@ int32_t QCameraParameters::initDefaultParameters()
     //Set HDR Type
     uint32_t supported_hdr_modes = m_pCapability->qcom_supported_feature_mask &
             (CAM_QCOM_FEATURE_SENSOR_HDR | CAM_QCOM_FEATURE_HDR);
+    if (!supported_hdr_modes) {
+        supported_hdr_modes = CAM_QCOM_FEATURE_HDR;
+        m_pCapability->qcom_supported_feature_mask |= CAM_QCOM_FEATURE_HDR;
+    }
     if (supported_hdr_modes) {
         if (CAM_QCOM_FEATURE_SENSOR_HDR == supported_hdr_modes) {
             String8 hdrModeValues;
@@ -5231,12 +5246,11 @@ int32_t QCameraParameters::initDefaultParameters()
     if (!m_bHDRModeSensor) {
         hdrNeed1xValues = createValuesStringFromMap(TRUE_FALSE_MODES_MAP,
                 PARAM_MAP_SIZE(TRUE_FALSE_MODES_MAP));
-        setHDRNeed1x(VALUE_TRUE);
     } else {
         hdrNeed1xValues.append(VALUE_FALSE);
-        setHDRNeed1x(VALUE_FALSE);
     }
     set(KEY_QC_SUPPORTED_HDR_NEED_1X, hdrNeed1xValues);
+    setHDRNeed1x(VALUE_FALSE);
 
     //Set True Portrait
     if ((m_pCapability->qcom_supported_feature_mask & CAM_QCOM_FEATURE_TRUEPORTRAIT) > 0) {
@@ -5310,10 +5324,15 @@ int32_t QCameraParameters::initDefaultParameters()
     set(KEY_QC_SUPPORTED_SCENE_DETECT, onOffValues);
     setSceneDetect(VALUE_OFF);
     m_bHDREnabled = false;
-    m_bHDR1xFrameEnabled = true;
 
     m_bHDRThumbnailProcessNeeded = false;
     m_bHDR1xExtraBufferNeeded = true;
+    if (m_pCapability->hdr_bracketing_setting.num_frames == 0) {
+        m_pCapability->hdr_bracketing_setting.num_frames = 2;
+        m_pCapability->hdr_bracketing_setting.exp_val.mode = CAM_EXP_BRACKETING_ON;
+        m_pCapability->hdr_bracketing_setting.exp_val.values[0] = -6;
+        m_pCapability->hdr_bracketing_setting.exp_val.values[1] = 6;
+    }
     for (uint32_t i=0; i<m_pCapability->hdr_bracketing_setting.num_frames; i++) {
         if (0 == m_pCapability->hdr_bracketing_setting.exp_val.values[i]) {
             m_bHDR1xExtraBufferNeeded = false;
@@ -6322,7 +6341,46 @@ int32_t  QCameraParameters::setISOValue(const char *isoValue)
         if (value != NAME_NOT_FOUND) {
             CDBG_HIGH("%s: Setting ISO value %s", __func__, isoValue);
             updateParamEntry(KEY_QC_ISO_MODE, isoValue);
+            if (!strcmp(isoValue, "ISO6400")) {
+                CDBG_HIGH("%s:%d ISO6400, will set iso value to 6400", __func__, __LINE__);
+                value = 6400;
+            }
             if (ADD_SET_PARAM_ENTRY_TO_BATCH(m_pParamBuf, CAM_INTF_PARM_ISO, value)) {
+                return BAD_VALUE;
+            }
+            return NO_ERROR;
+        } else {
+            int continuous_iso = 100;
+            if (!strcmp(isoValue, "ISO125"))
+              continuous_iso = 125;
+            else if (!strcmp(isoValue, "ISO160"))
+              continuous_iso = 160;
+            else if (!strcmp(isoValue, "ISO250"))
+              continuous_iso = 250;
+            else if (!strcmp(isoValue, "ISO320"))
+              continuous_iso = 320;
+            else if (!strcmp(isoValue, "ISO500"))
+              continuous_iso = 500;
+            else if (!strcmp(isoValue, "ISO640"))
+              continuous_iso = 640;
+            else if (!strcmp(isoValue, "ISO1000"))
+              continuous_iso = 1000;
+            else if (!strcmp(isoValue, "ISO1250"))
+              continuous_iso = 1250;
+            else if (!strcmp(isoValue, "ISO2000"))
+              continuous_iso = 2000;
+            else if (!strcmp(isoValue, "ISO2500"))
+              continuous_iso = 2500;
+            else if (!strcmp(isoValue, "ISO4000"))
+              continuous_iso = 4000;
+            else if (!strcmp(isoValue, "ISO5000"))
+              continuous_iso = 5000;
+            else {
+              ALOGE("Invalid ISO value: %s",
+                    (isoValue == NULL) ? "NULL" : isoValue);
+              return BAD_VALUE;
+            }
+            if (ADD_SET_PARAM_ENTRY_TO_BATCH(m_pParamBuf, CAM_INTF_PARM_ISO, continuous_iso)) {
                 return BAD_VALUE;
             }
             return NO_ERROR;
@@ -6465,6 +6523,16 @@ int32_t QCameraParameters::setFlash(const char *flashStr)
             CDBG_HIGH("%s: Setting Flash value %s", __func__, flashStr);
             updateParamEntry(KEY_FLASH_MODE, flashStr);
             mFlashValue = value;
+            /* Direct sysfs flash control for Lumia 950 XL torch mode */
+            int fd = open("/sys/class/leds/led:flash_torch/brightness", O_WRONLY);
+            if (fd >= 0) {
+                if (value == CAM_FLASH_MODE_TORCH) {
+                    write(fd, "255", 3);
+                } else {
+                    write(fd, "0", 1);
+                }
+                close(fd);
+            }
             return NO_ERROR;
         }
     }
@@ -6505,10 +6573,12 @@ int32_t QCameraParameters::updateFlashMode(cam_flash_mode_t flash_mode)
         return rc;
     }
 
-    CDBG_HIGH("%s: Setting Flash mode %d", __func__, mFlashValue);
-    if (ADD_SET_PARAM_ENTRY_TO_BATCH(m_pParamBuf, CAM_INTF_PARM_LED_MODE, mFlashValue)) {
-        ALOGE("%s:Failed to set led mode", __func__);
-        return BAD_VALUE;
+    if (m_pCapability->supported_flash_modes_cnt > 0) {
+        CDBG_HIGH("%s: Setting Flash mode %d", __func__, mFlashValue);
+        if (ADD_SET_PARAM_ENTRY_TO_BATCH(m_pParamBuf, CAM_INTF_PARM_LED_MODE, mFlashValue)) {
+            ALOGE("%s:Failed to set led mode", __func__);
+            return BAD_VALUE;
+        }
     }
 
     rc = commitSetBatch();
@@ -6599,6 +6669,13 @@ int32_t QCameraParameters::configureHDRBracketing(cam_capture_frame_config_t &fr
     uint32_t i = 0;
 
     uint32_t hdrFrameCount = m_pCapability->hdr_bracketing_setting.num_frames;
+    if (hdrFrameCount == 0) {
+        hdrFrameCount = 2;
+        m_pCapability->hdr_bracketing_setting.num_frames = 2;
+        m_pCapability->hdr_bracketing_setting.exp_val.mode = CAM_EXP_BRACKETING_ON;
+        m_pCapability->hdr_bracketing_setting.exp_val.values[0] = -6;
+        m_pCapability->hdr_bracketing_setting.exp_val.values[1] = 6;
+    }
     CDBG_HIGH("%s : HDR values %d, %d frame count: %u",
           __func__,
           (int8_t) m_pCapability->hdr_bracketing_setting.exp_val.values[0],
@@ -6710,7 +6787,8 @@ int32_t QCameraParameters::configFrameCapture(bool commitSettings)
         }
     }
 
-    if (isChromaFlashEnabled() || mFlashValue != CAM_FLASH_MODE_OFF) {
+    if ((m_pCapability->supported_flash_modes_cnt > 0) &&
+        (isChromaFlashEnabled() || mFlashValue != CAM_FLASH_MODE_OFF)) {
         configureFlash(m_captureFrameConfig);
     } else if(isHDREnabled()) {
         configureHDRBracketing (m_captureFrameConfig);
@@ -6752,6 +6830,13 @@ int32_t QCameraParameters::resetFrameCapture(bool commitSettings)
 {
     int32_t rc = NO_ERROR;
     memset(&m_captureFrameConfig, 0, sizeof(cam_capture_frame_config_t));
+
+    /* Ensure sysfs torch is off after capture */
+    int fd = open("/sys/class/leds/led:flash_torch/brightness", O_WRONLY);
+    if (fd >= 0) {
+        write(fd, "0", 1);
+        close(fd);
+    }
 
     if (commitSettings) {
         if(initBatchUpdate(m_pParamBuf) < 0 ) {
@@ -7097,20 +7182,13 @@ int32_t QCameraParameters::setDISValue(const char *disStr)
         int32_t value = lookupAttr(ENABLE_DISABLE_MODES_MAP,
                 PARAM_MAP_SIZE(ENABLE_DISABLE_MODES_MAP), disStr);
         if (value != NAME_NOT_FOUND) {
-            //For some IS types (like EIS 2.0), when DIS value is changed, we need to restart
-            //preview because of topology change in backend. But, for now, restart preview
-            //for all IS types.
-            m_bNeedRestart = true;
             CDBG_HIGH("%s: Setting DIS value %s", __func__, disStr);
             updateParamEntry(KEY_QC_DIS, disStr);
-            if (!(strcmp(disStr,"enable"))) {
-                m_bDISEnabled = true;
-            } else {
-                m_bDISEnabled = false;
-            }
-            if (ADD_SET_PARAM_ENTRY_TO_BATCH(m_pParamBuf, CAM_INTF_PARM_DIS_ENABLE, value)) {
-                return BAD_VALUE;
-            }
+            // On Lumia 950 XL, backend VFE software DIS causes buffer geometry violation
+            // and black preview due to adapted CAMIF window (1672 scanlines).
+            // Keep software DIS disabled (m_bDISEnabled = false) so software digital crop
+            // never crashes the VFE stream.
+            m_bDISEnabled = false;
             return NO_ERROR;
         }
     }
@@ -7133,53 +7211,13 @@ int32_t QCameraParameters::setDISValue(const char *disStr)
  *==========================================================================*/
 int32_t QCameraParameters::updateOisValue(bool oisValue)
 {
-    uint8_t enable = 0;
-    int32_t rc = NO_ERROR;
-
-    // Check for OIS disable
-    char ois_prop[PROPERTY_VALUE_MAX];
-    memset(ois_prop, 0, sizeof(ois_prop));
-    property_get("persist.camera.ois.disable", ois_prop, "0");
-    uint8_t ois_disable = (uint8_t)atoi(ois_prop);
-
-    //Enable OIS if it is camera mode or Camcoder 4K mode
-    if (!m_bRecordingHint || (is4k2kVideoResolution() && m_bRecordingHint)) {
-        enable = 1;
-        CDBG_HIGH("%s: Valid OIS mode!! ", __func__);
-    }
-    // Disable OIS if setprop is set
-    if (ois_disable || !oisValue) {
-        //Disable OIS
-        enable = 0;
-        CDBG_HIGH("%s: Disable OIS mode!! ois_disable(%d) oisValue(%d)",
-                __func__, ois_disable, oisValue);
-
-    }
-    m_bOISEnabled = enable;
-    if (m_bOISEnabled) {
-        updateParamEntry(KEY_QC_OIS, VALUE_ENABLE);
-    } else {
-        updateParamEntry(KEY_QC_OIS, VALUE_DISABLE);
-    }
-
-    if (initBatchUpdate(m_pParamBuf) < 0 ) {
-        ALOGE("%s:Failed to initialize group update table", __func__);
-        return BAD_TYPE;
-    }
-
-    CDBG_HIGH("%s: Sending OIS mode (%d)", __func__, enable);
-    if (ADD_SET_PARAM_ENTRY_TO_BATCH(m_pParamBuf, CAM_INTF_META_LENS_OPT_STAB_MODE, enable)) {
-        ALOGE("%s:Failed to update table", __func__);
-        return BAD_VALUE;
-    }
-
-    rc = commitSetBatch();
-    if (rc != NO_ERROR) {
-        ALOGE("%s:Failed to parameter changes", __func__);
-        return rc;
-    }
-
-    return rc;
+    (void)oisValue;
+    // On Lumia 950 XL (Cityman), mm-camera-daemon host-side gyro polling hangs preview launch
+    // ("sensor_native_enqueue:258 Gyro request was not processed") causing "Camera is not responding" ANR.
+    // Keep host-side daemon gyro polling disabled so camera opens instantly.
+    updateParamEntry(KEY_QC_OIS, VALUE_DISABLE);
+    m_bOISEnabled = false;
+    return NO_ERROR;
 }
 
 /*===========================================================================
@@ -8442,6 +8480,10 @@ int32_t QCameraParameters::stopAEBracket()
  *==========================================================================*/
 int32_t QCameraParameters::updateFlash(bool commitSettings)
 {
+    if (m_pCapability->supported_flash_modes_cnt == 0) {
+        return NO_ERROR;
+    }
+
     int32_t rc = NO_ERROR;
     int32_t value;
 
@@ -8461,24 +8503,7 @@ int32_t QCameraParameters::updateFlash(bool commitSettings)
         value = mFlashValue;
     }
 
-    if (m_bLedTorchOnly) {
-        // mm-camera has no flash driver here. Only torch keeps the GPIO LED
-        // on during preview; on/auto leave it off here and are strobed by
-        // QCamera2HWI at capture time. Never send CAM_INTF_PARM_LED_MODE to
-        // the daemon. Write the LED only when its steady state changes so a
-        // mode switch between off/auto/on cannot cut a strobe short.
-        if (value != mFlashDaemonValue) {
-            bool on = (value == CAM_FLASH_MODE_TORCH);
-            bool wasOn = (mFlashDaemonValue == CAM_FLASH_MODE_TORCH);
-            CDBG_HIGH("%s: led:flash_torch %s (flash value %d)", __func__,
-                    on ? "on" : "off", value);
-            if ((on != wasOn) && (QCameraTorch::setTorch(on) != 0)) {
-                ALOGE("%s: failed to drive led:flash_torch", __func__);
-                return BAD_VALUE;
-            }
-            mFlashDaemonValue = value;
-        }
-    } else if (value != mFlashDaemonValue) {
+    if (value != mFlashDaemonValue) {
         if (isAFRunning()) {
             CDBG("%s: AF is running, cancel AF before changing flash mode ", __func__);
             m_pCamOpsTbl->ops->cancel_auto_focus(m_pCamOpsTbl->camera_handle);
@@ -8502,34 +8527,6 @@ int32_t QCameraParameters::updateFlash(bool commitSettings)
     }
 
     return rc;
-}
-
-/*===========================================================================
- * FUNCTION   : getLedStrobeMode
- *
- * DESCRIPTION: flash mode the HAL has to realise itself on led:flash_torch
- *              for the next still capture. Only meaningful on boards where
- *              mm-camera has no flash driver (m_bLedTorchOnly). Uses the same
- *              exclusions as updateFlash: bracketing captures never flash.
- *
- * PARAMETERS : none
- *
- * RETURN     : CAM_FLASH_MODE_ON or CAM_FLASH_MODE_AUTO when the LED must be
- *              strobed, CAM_FLASH_MODE_OFF otherwise (flash off, torch
- *              already lit by updateFlash, or a bracketing mode)
- *==========================================================================*/
-int32_t QCameraParameters::getLedStrobeMode()
-{
-    if (!m_bLedTorchOnly ||
-            isHDREnabled() || m_bAeBracketingEnabled || m_bAFBracketingOn ||
-            m_bOptiZoomOn || m_bReFocusOn) {
-        return CAM_FLASH_MODE_OFF;
-    }
-    if ((mFlashValue == CAM_FLASH_MODE_ON) ||
-            (mFlashValue == CAM_FLASH_MODE_AUTO)) {
-        return mFlashValue;
-    }
-    return CAM_FLASH_MODE_OFF;
 }
 
 /*===========================================================================
@@ -9758,6 +9755,9 @@ uint16_t QCameraParameters::getExifIsoSpeed()
         break;
     case CAM_ISO_MODE_3200:
         isoSpeed = 3200;
+        break;
+    case CAM_ISO_MODE_6400:
+        isoSpeed = 6400;
         break;
     }
     return isoSpeed;
@@ -11301,9 +11301,8 @@ bool QCameraParameters::setStreamConfigure(bool isCapture,
     } else if (!isCapture) {
         if (m_bRecordingHint) {
             if (m_bDISEnabled) {
-                char value[PROPERTY_VALUE_MAX];
-                // Make default value for IS_TYPE as IS_TYPE_EIS_2_0
-                property_get("persist.camera.is_type", value, "4");
+                // Default IS_TYPE to IS_TYPE_NONE (0) to avoid gyro stalls
+                property_get("persist.camera.is_type", value, "0");
                 mIsType = static_cast<cam_is_type_t>(atoi(value));
             } else {
                 mIsType = IS_TYPE_NONE;

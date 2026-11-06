@@ -154,6 +154,8 @@ PRODUCT_PACKAGES += \
 
 # Camera
 PRODUCT_PACKAGES += \
+    libmmcamera_mot_imx230 \
+    libshim_atomic \
     camera.msm8994 \
     libmmcamera_interface \
     libmmjpeg_interface \
@@ -166,7 +168,6 @@ PRODUCT_PACKAGES += \
     mot_imx230_chromatix.xml \
     msm8994_camera.xml.system \
     mot_imx230_chromatix.xml.system
-
 
 PRODUCT_PACKAGES += \
     vendor.qti.hardware.camera.device@1.0 \
@@ -191,9 +192,9 @@ PRODUCT_PACKAGES += \
     android.hardware.memtrack@1.0-service
 
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
-    debug.sf.disable_backpressure=1 \
+    debug.sf.disable_backpressure=0 \
     debug.sf.enable_gl_backpressure=1 \
-    debug.sf.latch_unsignaled=1
+    debug.sf.latch_unsignaled=0
 
 # DRM
 PRODUCT_PACKAGES += \
@@ -267,7 +268,9 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/rootdir/etc/init.qcom.devwait.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.devwait.sh \
     $(LOCAL_PATH)/rootdir/etc/init.qcom.devstart.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.devstart.sh \
     $(LOCAL_PATH)/rootdir/etc/fstab.cityman:$(TARGET_COPY_OUT_ROOT)/fstab.cityman \
-    $(LOCAL_PATH)/rootdir/etc/fstab.cityman:$(TARGET_COPY_OUT_RAMDISK)/fstab.cityman
+    $(LOCAL_PATH)/rootdir/etc/fstab.cityman:$(TARGET_COPY_OUT_RAMDISK)/fstab.cityman \
+    $(LOCAL_PATH)/rootdir/etc/ueventd.cityman.rc:$(TARGET_COPY_OUT_ROOT)/ueventd.cityman.rc \
+    $(LOCAL_PATH)/rootdir/etc/ueventd.cityman.rc:$(TARGET_COPY_OUT_RAMDISK)/ueventd.cityman.rc
 
 # Keylayout
 PRODUCT_COPY_FILES += \

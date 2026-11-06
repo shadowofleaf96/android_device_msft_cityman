@@ -62,15 +62,16 @@
 
   <Defaults>
     <Little min_khz="384000" hispeed_khz="960000"/>
-    <Big min_khz="384000" hispeed_khz="1248000" max_khz="1958400"/>
+    <Big min_khz="384000" hispeed_khz="960000" max_khz="1440000"/>
     <Gpu min_pwrlevel="5" max_pwrlevel="0" default_pwrlevel="4"/>
-    <InputBoost freq="0:960000 4:1248000" ms="300"/>
+    <InputBoost freq="0:960000 4:1248000 5:1248000" ms="200"/>
   </Defaults>
 
-  <Hint name="INTERACTION" duration_ms="300">
-    <Little min_khz="960000"/>
+  <Hint name="INTERACTION" duration_ms="200">
+    <Little min_khz="768000"/>
     <Big min_khz="1248000"/>
     <Gpu min_pwrlevel="4"/>
+    <InputBoost freq="0:960000 4:1248000 5:1248000" ms="200"/>
   </Hint>
 
   <Hint name="LAUNCH" duration_ms="2000">

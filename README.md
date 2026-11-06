@@ -50,6 +50,15 @@ Device tree and hardware support for the Microsoft Lumia 950 XL (`cityman`) powe
   - Accelerometer, Gyroscope, Magnetometer.
   - Ambient Light Sensor, Proximity Sensor.
   - Barometer / Pressure Sensor, Temperature Sensor.
+- **Camera & Imaging**:
+  - **Rear PureView 20MP Camera (Sony IMX230)**:
+    - Viewfinder live preview at 24/30 fps in crisp WQHD resolution.
+    - Full-resolution photo capture at 21.4 MP (5344 × 4016, 4:3) with hardware JPEG encoding.
+    - Autofocus & Macro: Rohm BU63165 OIS/AF actuator integrated with dynamic linear DAC mapping [840..1500].
+    - Continuous Autofocus (CAF) and interactive Tap-to-Focus with visual animated focus ring and AF search sweep.
+    - Sharp macro focus on close-up text and objects.
+    - High-definition video recording (1080p and 4K UHD).
+    - Hardened against daemon gyro polling stalls (eliminating "Camera is not responding" ANR on startup).
 
 ---
 
@@ -63,9 +72,8 @@ Device tree and hardware support for the Microsoft Lumia 950 XL (`cityman`) powe
 ### Not Working / In Progress
 
 - **Camera & Imaging**:
-  - Rear Camera (20MP PureView Sony IMX230): Sensor initializes and binds to ISP, but viewfinder shows a black preview.
-  - Front-Facing Camera: Not working.
-  - Iris Scanner: Not working.
+  - Front-Facing Camera (5MP OmniVision OV5648): In progress.
+  - Iris Scanner: In progress.
 - **VoLTE / VoWiFi**: Carrier-specific IMS profile customization (standard Circuit-Switched Fallback handles 2G/3G voice calls reliably).
 
 ---

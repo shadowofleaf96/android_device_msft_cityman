@@ -36,7 +36,7 @@
 /dev/felica_cal           0660  system    system
 /dev/felica_test          0660  system    system
 
-/dev/smd0                 0660   system     system
+/dev/smd0                 0660   radio      system
 /dev/smd4                 0660   system     system
 /dev/smd7                 0660   bluetooth  bluetooth
 /dev/smd8                 0660   system     system
@@ -44,7 +44,7 @@
 /dev/rmnet_ctrl           0660   usb        usb
 /dev/dpl_ctrl             0660   usb        usb
 #permissions for CSVT
-/dev/smd11                0660   system     system
+/dev/smd11                0660   radio      system
 /dev/smd21                0660   system     system
 /dev/smd22                0660   system     system
 /dev/smd36                0660   system     system

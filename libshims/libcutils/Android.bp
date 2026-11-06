@@ -18,6 +18,7 @@ cc_library {
     srcs: [
         "strdup16to8.cpp",
         "strdup8to16.cpp",
+        "atomic.cpp",
     ],
     proprietary: true,
 }

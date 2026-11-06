@@ -30,7 +30,7 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/aosp_base_telephony.mk)
 PRODUCT_NAME := lineage_cityman
 PRODUCT_DEVICE := cityman
 PRODUCT_BRAND := Google
-PRODUCT_MODEL := Pixel 5
+PRODUCT_MODEL := Lumia 950 XL
 PRODUCT_MANUFACTURER := Google
 PRODUCT_RESTRICT_VENDOR_FILES := false
 

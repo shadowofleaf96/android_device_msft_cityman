@@ -49,7 +49,7 @@ get-set-forall /sys/devices/soc.0/qcom,bcl.*/mode enable
 restorecon -R /sys/devices/system/cpu
 
 # Best effort limiting for first time boot if msm_performance module is absent
-write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 960000
+[ -e /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq ] && write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 960000
 
 # Limit A57 max freq from msm_perf module in case CPU 4 is offline
 write /sys/module/msm_performance/parameters/cpu_max_freq "4:960000 5:960000 6:960000 7:960000"
@@ -81,40 +81,32 @@ write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor schedutil
 restorecon -R /sys/devices/system/cpu
 write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 384000
 
-# restore A57's max
-copy /sys/devices/system/cpu/cpu4/cpufreq/cpuinfo_max_freq /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq
+# cap A57 max frequency to 1.44 GHz (prevents 1.96 GHz thermal runaway)
+write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 1440000
 
-# plugin remaining A57s
+# online big cluster CPUs (thermal-engine handles hotplugging under thermal load)
 write /sys/devices/system/cpu/cpu5/online 1
 write /sys/devices/system/cpu/cpu6/online 1
 write /sys/devices/system/cpu/cpu7/online 1
 
-# Restore CPU 4-7 max freq from msm_performance
-write /sys/module/msm_performance/parameters/cpu_max_freq "4:4294967295 5:4294967295 6:4294967295 7:4294967295"
+# Cap CPU4-7 max freq to 1.44 GHz in msm_performance
+write /sys/module/msm_performance/parameters/cpu_max_freq "4:1440000 5:1440000 6:1440000 7:1440000"
 
-# input boost configuration (kernel cpu-boost, fires on every touch event).
-# Boost policy CPU only; scheduler handles the rest. 300ms matches INTERACTION hint.
-write /sys/module/cpu_boost/parameters/input_boost_freq "0:960000 4:1248000"
-write /sys/module/cpu_boost/parameters/input_boost_ms 300
-write /sys/module/cpu_boost/parameters/sched_boost_on_input Y
+# input boost configuration: 200ms burst on touch across little & big, with sched_boost
+write /sys/module/cpu_boost/parameters/input_boost_freq "0:960000 4:1248000 5:1248000"
+write /sys/module/cpu_boost/parameters/input_boost_ms 200
+write /sys/module/cpu_boost/parameters/sched_boost_on_input 1
 
-# Setting B.L scheduler parameters
-write /proc/sys/kernel/sched_migration_fixup 1
-write /proc/sys/kernel/sched_upmigrate 75
-write /proc/sys/kernel/sched_downmigrate 60
-write /proc/sys/kernel/sched_freq_inc_notify 400000
-write /proc/sys/kernel/sched_freq_dec_notify 400000
+# EAS SchedTune configuration: prioritize idle CPUs and grant capacity boost to UI foreground tasks
+write /dev/stune/top-app/schedtune.boost 10
+write /dev/stune/top-app/schedtune.prefer_idle 1
+write /dev/stune/foreground/schedtune.prefer_idle 1
+write /dev/stune/rt/schedtune.prefer_idle 1
 
 # enable rps static configuration
 write /sys/class/net/rmnet_ipa0/queues/rx-0/rps_cpus 8
 
-# android background processes are set to nice 10. Never schedule these on the a57s.
-write /proc/sys/kernel/sched_upmigrate_min_nice 9
-
 get-set-forall  /sys/class/devfreq/qcom,cpubw*/governor bw_hwmon
-
-# Disable sched_boost
-write /proc/sys/kernel/sched_boost 0
 
 # re-enable thermal core control
 write /sys/module/msm_thermal/core_control/enabled 1
@@ -130,23 +122,23 @@ write /sys/class/kgsl/kgsl-3d0/default_pwrlevel 4
 write /proc/sys/vm/vfs_cache_pressure 100
 
 # Power HAL runs as system. Nodes it writes (A57 online, interactive created).
-chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-chown system system /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq
-chown system system /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq
+chown system:system /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+chown system:system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+chown system:system /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq
+chown system:system /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq
 chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
 chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
 chmod 0664 /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq
 chmod 0664 /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq
-chown system system /sys/module/cpu_boost/parameters/input_boost_freq
-chown system system /sys/module/cpu_boost/parameters/input_boost_ms
+chown system:system /sys/module/cpu_boost/parameters/input_boost_freq
+chown system:system /sys/module/cpu_boost/parameters/input_boost_ms
 chmod 0664 /sys/module/cpu_boost/parameters/input_boost_freq
 chmod 0664 /sys/module/cpu_boost/parameters/input_boost_ms
-chown system system /sys/module/msm_performance/parameters/cpu_max_freq
+chown system:system /sys/module/msm_performance/parameters/cpu_max_freq
 chmod 0664 /sys/module/msm_performance/parameters/cpu_max_freq
-chown system system /sys/class/kgsl/kgsl-3d0/max_pwrlevel
-chown system system /sys/class/kgsl/kgsl-3d0/min_pwrlevel
-chown system system /sys/class/kgsl/kgsl-3d0/default_pwrlevel
+chown system:system /sys/class/kgsl/kgsl-3d0/max_pwrlevel
+chown system:system /sys/class/kgsl/kgsl-3d0/min_pwrlevel
+chown system:system /sys/class/kgsl/kgsl-3d0/default_pwrlevel
 chmod 0664 /sys/class/kgsl/kgsl-3d0/max_pwrlevel
 chmod 0664 /sys/class/kgsl/kgsl-3d0/min_pwrlevel
 chmod 0664 /sys/class/kgsl/kgsl-3d0/default_pwrlevel
